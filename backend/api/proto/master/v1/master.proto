@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+package master.v1;
+
+import "google/protobuf/timestamp.proto";
+import "user/v1/user.proto";
+import "service/v1/service.proto";
+
+option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/master/v1;masterv1";
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum SortOrder {
+    SORT_ORDER_UNSPECIFIED = 0;
+    SORT_ORDER_ASC         = 1;
+    SORT_ORDER_DESC        = 2;
+}
+
+enum SortType {
+    SORT_TYPE_UNSPECIFIED   = 0;
+    SORT_TYPE_RATING        = 1;
+    SORT_TYPE_PRICE         = 2;
+    SORT_TYPE_EXPERIENCE    = 3;
+}
+
+// ============================================================
+// ENTITIES
+// ============================================================
+
+message Certificate {
+  string name         = 1;
+  string organization = 2;
+  int32  year         = 3;
+  string file_url     = 4;
+}
+
+message MasterProfile {
+  string                user_id                     = 1;
+  string                slug                        = 2;
+  string                bio                         = 3;
+  string                specialization              = 4;
+  int32                 years_of_experience         = 5;
+  repeated string       languages                   = 6;
+  repeated Certificate  certificates                = 7;
+  bool                  is_accepting_bookings       = 8;
+
+  float                 avg_rating                  = 9;
+  int32                 reviews_count               = 10;
+
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+message MasterCard {
+    user.v1.User    user            = 1;
+    MasterProfile   master          = 2;
+    repeated service.v1.Service top_services = 3;
+    int32           total_services  = 4;
+    int32           min_price       = 5;
+}
+
+message Filter {
+    SortType    sort_by         = 1;
+    SortOrder   sort_order      = 2;
+    int32       min_price       = 3;
+    int32       max_price       = 4;
+    string      currency        = 5;
+    int32       min_experience  = 6;
+    string      specialization  = 7;
+    string      service_id      = 8;
+    string      master_timezone = 9;
+}
+
+// ============================================================
+// REQUESTS / RESPONSES
+// ============================================================
+
+message ListMastersRequest {
+    int32   page_size   = 1;
+    Filter  filters     = 2;
+    string  page_token  = 3;
+}
+
+message ListMastersResponse {
+    repeated MasterCard masters = 1;
+    string   next_page_token    = 2;
+}
+
+message GetMasterRequest {
+    string slug = 1;
+}
+
+GetMyMasterProfile {}
+
+message GetMasterResponse {
+    user.v1.User                user        = 1;
+    MasterProfile               master      = 2;
+    repeated service.v1.Service services    = 3;
+}
+
+message UpdateMasterRequest {
+    string      slug                = 1;
+    string      bio                 = 2;
+    string      specialization      = 3;
+    int32       years_of_experience = 4;
+    repeated    string languages    = 5;
+    repeated Certificate certificates = 6;
+    bool        is_accepting_bookings = 7;
+}
+
+message UpdateMasterResponse {
+    MasterProfile master = 1;
+}
+
+// ============================================================
+// SERVICE
+// ============================================================
+
+service MasterService {
+    // public
+    rpc ListMasters(ListMastersRequest) returns (ListMastersResponse);
+    rpc GetMaster(GetMasterRequest) returns (GetMasterResponse);
+    rpc GetMyMasterProfile(GetMyMasterProfileRequest) returns (GetMasterResponse);
+
+    // private
+    rpc UpdateMaster(UpdateMasterRequest) returns (UpdateMasterResponse);
+}
