@@ -1,0 +1,126 @@
+syntax = "proto3";
+
+package auth.v1;
+
+import "google/protobuf/timestamp.proto";
+import "user/v1/user.proto";
+
+option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/auth/v1;authv1";
+
+// ============================================================
+// ENTITIES
+// ============================================================
+
+message TokenPair {
+  string access_token  = 1;
+  string refresh_token = 2;
+  int64  expires_in    = 3;
+}
+
+message Session {
+  string id         = 1;
+  string user_agent = 2;
+  string ip_address = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp expires_at = 5;
+}
+
+// ============================================================
+// REQUESTS / RESPONSES
+// ============================================================
+
+message RegisterRequest {
+  string email      = 1;
+  string password   = 2;
+  string name       = 3;
+  user.v1.Role role = 4; // CLIENT or MASTER
+}
+
+message RegisterResponse {
+  user.v1.User user   = 1;
+  TokenPair    tokens = 2;
+}
+
+message LoginRequest {
+  string email    = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  user.v1.User user   = 1;
+  TokenPair    tokens = 2;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
+  TokenPair tokens = 1;
+}
+
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+message LogoutResponse {}
+
+message LogoutAllRequest {}
+
+message LogoutAllResponse {
+  int32 revoked_sessions = 1;
+}
+
+message VerifyEmailRequest {
+  string token = 1;
+}
+
+message VerifyEmailResponse {
+  bool success = 1;
+}
+
+message ForgotPasswordRequest {
+  string email = 1;
+}
+
+message ForgotPasswordResponse {}
+
+message ResetPasswordRequest {
+  string token        = 1;
+  string new_password = 2;
+}
+
+message ResetPasswordResponse {}
+
+message ChangePasswordRequest {
+  string current_password = 1;
+  string new_password     = 2;
+}
+
+message ChangePasswordResponse {}
+
+message ListSessionsRequest {}
+
+message ListSessionsResponse {
+  repeated Session sessions = 1;
+}
+
+// ============================================================
+// SERVICE
+// ============================================================
+
+service AuthService {
+  // public
+  rpc Register(RegisterRequest)             returns (RegisterResponse);
+  rpc Login(LoginRequest)                   returns (LoginResponse);
+  rpc RefreshToken(RefreshTokenRequest)     returns (RefreshTokenResponse);
+  rpc VerifyEmail(VerifyEmailRequest)       returns (VerifyEmailResponse);
+  rpc ForgotPassword(ForgotPasswordRequest) returns (ForgotPasswordResponse);
+  rpc ResetPassword(ResetPasswordRequest)   returns (ResetPasswordResponse);
+
+  // private
+  rpc Logout(LogoutRequest)                 returns (LogoutResponse);
+  rpc LogoutAll(LogoutAllRequest)           returns (LogoutAllResponse);
+  rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
+  rpc ListSessions(ListSessionsRequest)     returns (ListSessionsResponse);
+}
