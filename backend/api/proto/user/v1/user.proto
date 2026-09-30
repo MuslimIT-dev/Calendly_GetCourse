@@ -35,14 +35,6 @@ message User {
   google.protobuf.Timestamp updated_at = 9;
 }
 
-message MasterProfile {
-  string user_id    = 1;
-  string slug       = 2;
-  string bio        = 3;
-  string avatar_url = 4;
-  repeated string services = 5;
-}
-
 // ============================================================
 // REQUESTS / RESPONSES
 // ============================================================
@@ -72,34 +64,11 @@ message UpdateUserResponse {
   User user = 1;
 }
 
-message GetMasterProfileRequest {
-  string slug = 1;
-}
-
-message GetMasterProfileResponse {
-  MasterProfile profile = 1;
-  User          user    = 2;
-}
-
-message ListMastersRequest {
-  int32  page_size  = 1;
-  string page_token = 2;
-}
-
-message ListMastersResponse {
-  repeated User masters         = 1;
-  string        next_page_token = 2;
-}
-
 // ============================================================
 // SERVICE
 // ============================================================
 
 service UserService {
-  // Public
-  rpc GetMasterProfile(GetMasterProfileRequest) returns (GetMasterProfileResponse);
-  rpc ListMasters(ListMastersRequest)           returns (ListMastersResponse);
-
   // Private
   rpc GetUser(GetUserRequest)                   returns (GetUserResponse);
   rpc GetMe(GetMeRequest)                       returns (GetMeResponse);
