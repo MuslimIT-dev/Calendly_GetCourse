@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+package user.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/user/v1;userv1";
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum Role {
+  ROLE_UNSPECIFIED = 0;
+  ROLE_OWNER       = 1;
+  ROLE_ADMIN       = 2;
+  ROLE_MASTER      = 3;
+  ROLE_CLIENT      = 4;
+}
+
+// ============================================================
+// ENTITIES
+// ============================================================
+
+message User {
+  string id         = 1;
+  string email      = 2;
+  string name       = 3;
+  string avatar_url = 4;
+  string timezone   = 5;
+  Role   role       = 6;
+  bool   email_verified = 7;
+
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+message MasterProfile {
+  string user_id    = 1;
+  string slug       = 2;
+  string bio        = 3;
+  string avatar_url = 4;
+  repeated string services = 5;
+}
+
+// ============================================================
+// REQUESTS / RESPONSES
+// ============================================================
+
+message GetUserRequest {
+  string user_id = 1;
+}
+
+message GetUserResponse {
+  User user = 1;
+}
+
+message GetMeRequest {}
+
+message GetMeResponse {
+  User user = 1;
+}
+
+message UpdateUserRequest {
+  string name       = 1;
+  string avatar_url = 2;
+  string timezone   = 3;
+  string bio        = 4;
+}
+
+message UpdateUserResponse {
+  User user = 1;
+}
+
+message GetMasterProfileRequest {
+  string slug = 1;
+}
+
+message GetMasterProfileResponse {
+  MasterProfile profile = 1;
+  User          user    = 2;
+}
+
+message ListMastersRequest {
+  int32  page_size  = 1;
+  string page_token = 2;
+}
+
+message ListMastersResponse {
+  repeated User masters         = 1;
+  string        next_page_token = 2;
+}
+
+// ============================================================
+// SERVICE
+// ============================================================
+
+service UserService {
+  // Public
+  rpc GetMasterProfile(GetMasterProfileRequest) returns (GetMasterProfileResponse);
+  rpc ListMasters(ListMastersRequest)           returns (ListMastersResponse);
+
+  // Private
+  rpc GetUser(GetUserRequest)                   returns (GetUserResponse);
+  rpc GetMe(GetMeRequest)                       returns (GetMeResponse);
+  rpc UpdateUser(UpdateUserRequest)             returns (UpdateUserResponse);
+}
