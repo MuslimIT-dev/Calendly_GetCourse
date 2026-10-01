@@ -1,0 +1,169 @@
+syntax = "proto3";
+
+package schedule.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/type/timeofday.proto";
+import "google/type/dayofweek.proto;
+import "user/v1/user.proto";
+
+option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/schedule/v1;schedulev1";
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum ExceptionType {
+    EXCEPTION_TYPE_UNSPECIFIED  = 0;
+    EXCEPTION_TYPE_DAY_OFF      = 1;
+    EXCEPTION_TYPE_CUSTOM_HOURS = 2;
+    EXCEPTION_TYPE_VACATION     = 3;
+}
+
+// ============================================================
+// ENTITIES
+// ============================================================
+
+message ScheduleRule {
+    string                id             = 1;
+    string                master_id      = 2;
+    google.type.DayOfWeek day_of_week    = 3;
+    bool                  is_working_day = 4;
+
+    google.type.TimeOfDay work_start = 5;
+    google.type.TimeOfDay work_end   = 6;
+
+    google.type.TimeOfDay rest_start = 7;
+    google.type.TimeOfDay rest_end   = 8;
+
+    int32 buffer_between_slots_mins  = 9;
+
+    google.protobuf.Timestamp created_at  = 10;
+    google.protobuf.Timestamp updated_at  = 11;
+}
+
+message Exception {
+    string                id            = 1;
+    string                master_id     = 2;
+    string                date          = 3;
+    bool                  is_full_day   = 4;
+    ExceptionType         type          = 5;
+
+    google.type.TimeOfDay custom_start  = 6;
+    google.type.TimeOfDay custom_end    = 7;
+    google.type.TimeOfDay rest_start    = 8;
+    google.type.TimeOfDay rest_end      = 9;
+
+    string reason                       = 10;
+    google.protobuf.Timestamp created_at = 11;
+}
+
+message Day {
+    string date        = 1;
+    bool   has_slots   = 2;
+    int32  slots_count = 3;
+}
+
+message TimeSlot {
+    google.protobuf.Timestamp start = 1;
+    google.protobuf.Timestamp end   = 2;
+}
+
+// ============================================================
+// REQUESTS / RESPONSES
+// ============================================================
+
+message GetMonthScheduleRequest {
+    string master_id  = 1;
+    string service_id = 2;
+    int32  year       = 3;
+    int32  month      = 4;
+    string timezone   = 5;
+}
+
+message GetMonthScheduleResponse {
+    repeated Day days = 1;
+}
+
+message GetDayScheduleRequest {
+    string master_id  = 1;
+    string service_id = 2;
+    string date       = 3;
+    string timezone   = 4;
+}
+
+message GetDayScheduleResponse {
+    repeated TimeSlot slots = 1;
+}
+
+message GetNextAvailableSlotRequest {
+    string master_id  = 1;
+    string service_id = 2;
+    string timezone   = 3;
+}
+
+message GetNextAvailableSlotResponse {
+    repeated google.protobuf.Timestamp start = 1; // max 3 available slots
+}
+
+message GetScheduleRulesRequest {}
+
+message GetScheduleRulesResponse {
+    repeated ScheduleRule schedule_rules = 1;
+}
+
+message UpdateScheduleRulesRequest {
+    repeated ScheduleRule rules = 1;
+}
+
+message UpdateScheduleRulesResponse {
+    repeated ScheduleRule rules = 1;
+}
+
+message AddExceptionRequest {
+    string                date         = 1;
+    ExceptionType         type         = 2;
+    bool                  is_full_day  = 3;
+    google.type.TimeOfDay custom_start = 4;
+    google.type.TimeOfDay custom_end   = 5;
+    google.type.TimeOfDay rest_start   = 6;
+    google.type.TimeOfDay rest_end     = 7;
+    string                reason       = 8;
+}
+
+message AddExceptionResponse {
+    Exception exception = 1;
+}
+
+message DeleteExceptionRequest {
+    string exception_id = 1;
+}
+
+message DeleteExceptionResponse {}
+
+message ListExceptionsRequest {
+    string from_date = 1;  // "2025-10-01"
+    string to_date   = 2;  // "2025-10-31"
+}
+
+message ListExceptionsResponse {
+    repeated Exception exceptions = 1;
+}
+
+// ============================================================
+// SERVICE
+// ============================================================
+
+service ScheduleService {
+    // Public
+    rpc GetMonthSchedule(GetMonthScheduleRequest) returns (GetMonthScheduleResponse);
+    rpc GetDaySchedule(GetDayScheduleRequest)     returns (GetDayScheduleResponse);
+    rpc GetNextAvailableSlot(GetNextAvailableSlotRequest) returns (GetNextAvailableSlotResponse);
+
+    // Private
+    rpc GetScheduleRules(GetScheduleRulesRequest)       returns (GetScheduleRulesResponse);
+    rpc UpdateScheduleRules(UpdateScheduleRulesRequest) returns (UpdateScheduleRulesResponse);
+    rpc ListExceptions(ListExceptionsRequest)             returns (ListExceptionsResponse);
+    rpc AddException(AddExceptionRequest)               returns (AddExceptionResponse);
+    rpc DeleteException(DeleteExceptionRequest)         returns (DeleteExceptionResponse);
+}
