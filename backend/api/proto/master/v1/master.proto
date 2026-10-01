@@ -40,17 +40,18 @@ message MasterProfile {
   string                user_id                     = 1;
   string                slug                        = 2;
   string                bio                         = 3;
-  string                specialization              = 4;
-  int32                 years_of_experience         = 5;
-  repeated string       languages                   = 6;
-  repeated Certificate  certificates                = 7;
-  bool                  is_accepting_bookings       = 8;
+  string                category                    = 4;
+  string                specialization              = 5;
+  int32                 years_of_experience         = 6;
+  repeated string       languages                   = 7;
+  repeated Certificate  certificates                = 8;
+  bool                  is_accepting_bookings       = 9;
 
-  float                 avg_rating                  = 9;
-  int32                 reviews_count               = 10;
+  float                 avg_rating                  = 10;
+  int32                 reviews_count               = 11;
 
-  google.protobuf.Timestamp created_at = 11;
-  google.protobuf.Timestamp updated_at = 12;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
 }
 
 message MasterCard {
@@ -112,9 +113,7 @@ message UpdateMasterResponse {
     MasterProfile master = 1;
 }
 
-message UpdateSlugRequest {
-    string slug = 1;
-}
+message UpdateSlugRequest {}
 
 message UpdateSlugResponse {
     MasterProfile master = 1;    

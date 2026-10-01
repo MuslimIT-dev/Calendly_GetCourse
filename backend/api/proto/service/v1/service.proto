@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package service.v1;
+
+import "google/protobuf/timestamp.proto";
+import "user/v1/user.proto";
+
+option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/service/v1;servicev1";
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+// ============================================================
+// ENTITIES
+// ============================================================
+
+message Service {
+    string id               = 1;
+    string slug             = 2;
+    string name             = 3;
+    string description      = 4;
+    int32  duration_mins    = 5;
+    int32  price            = 6;
+
+    google.protobuf.Timestamp created_at = 7;
+    google.protobuf.Timestamp updated_at = 8;
+}
+
+// ============================================================
+// REQUESTS / RESPONSES
+// ============================================================
+
+message GetMyServicesRequest {}
+
+message GetMyServicesResponse {
+    repeated Service services = 1;
+}
+
+message AddServiceRequest {
+    string default_id       = 1;
+    string new_description  = 2; // if "" use the default
+    int32 duration_mins     = 3;
+    int32 price             = 4;
+}
+
+message AddServiceResponse {
+    Service service = 1;
+}
+
+message UpdateServiceRequest {
+    string id               = 1;
+    string description      = 2;
+    int32  duration_mins    = 3;
+    int32  price            = 4;
+}
+
+message UpdateServiceResponse {
+    Service service = 1;
+}
+
+message DeleteServiceRequest {
+    string id = 1;
+}
+
+message DeleteServiceResponse {}
+
+// ============================================================
+// SERVICES
+// ============================================================
+
+service ServiceService {
+    // private
+    rpc GetMyServices(GetMyServicesRequest) returns (GetMyServicesResponse);
+    rpc UpdateService(UpdateServiceRequest) returns (UpdateServicesResponse);
+    rpc AddService(AddServiceRequest)       returns (AddServicesResponse);
+    rpc DeleteService(DeleteServiceRequest) returns (DeleteServicesResponse);
+}
