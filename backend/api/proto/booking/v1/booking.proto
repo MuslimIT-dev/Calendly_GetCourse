@@ -1,0 +1,156 @@
+syntax = "proto3";
+
+package booking.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/type/money.proto";
+
+option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/booking/v1;bookingv1";
+
+enum AppointmentStatus {
+    APPOINTMENT_STATUS_UNSPECIFIED         = 0;
+    APPOINTMENT_STATUS_PENDING             = 1;
+    APPOINTMENT_STATUS_CONFIRMED           = 2;
+    APPOINTMENT_STATUS_CANCELLED_BY_CLIENT = 3;
+    APPOINTMENT_STATUS_CANCELLED_BY_MASTER = 4;
+    APPOINTMENT_STATUS_COMPLETED           = 5;
+    APPOINTMENT_STATUS_NO_SHOW             = 6;
+}
+
+enum PaymentStatus {
+    PAYMENT_STATUS_UNSPECIFIED = 0;
+    PAYMENT_STATUS_PENDING     = 1;
+    PAYMENT_STATUS_PAID        = 2;
+    PAYMENT_STATUS_REFUNDED    = 3;
+    PAYMENT_STATUS_FAILED      = 4;
+}
+
+message Appointment {
+    string id         = 1;
+    string client_id  = 2;
+    string master_id  = 3;
+    string service_id = 4;
+
+    string slug         = 5;
+    string master_name  = 6;
+    string service_name = 7;
+    string address      = 8;
+
+    google.protobuf.Timestamp start_time = 9;
+    google.protobuf.Timestamp end_time   = 10;
+    string                    timezone   = 11;
+
+    AppointmentStatus status         = 12;
+    google.type.Money price          = 13;
+    PaymentStatus     payment_status = 14;
+
+    bool   is_online   = 15;
+    string meeting_url = 16;
+
+    string client_notes = 17;
+    string master_notes = 18;
+
+    google.protobuf.Timestamp created_at = 19;
+    google.protobuf.Timestamp updated_at = 20;
+}
+
+message CreateAppointmentRequest {
+    string master_id  = 1;
+    string service_id = 2;
+    google.protobuf.Timestamp start_time = 3;
+    string                    timezone   = 4;
+    string                    client_notes = 5;
+}
+
+message CreateAppointmentResponse {
+    Appointment appointment = 1;
+}
+
+message GetAppointmentRequest {
+    string id = 1;
+}
+
+message GetAppointmentResponse {
+    Appointment appointment = 1;
+}
+
+message ListMyAppointmentsRequest {
+    AppointmentStatus status_filter = 1;
+    int32  page_size  = 2;
+    string page_token = 3;
+}
+
+message ListMyAppointmentsResponse {
+    repeated Appointment appointments    = 1;
+    string               next_page_token = 2;
+}
+
+message ListMasterAppointmentsRequest {
+    string            master_id     = 1;
+    AppointmentStatus status_filter = 2;
+    string            from_date     = 3;
+    string            to_date       = 4;
+    int32             page_size     = 5;
+    string            page_token    = 6;
+}
+
+message ListMasterAppointmentsResponse {
+    repeated Appointment appointments    = 1;
+    string               next_page_token = 2;
+}
+
+message CancelAppointmentRequest {
+    string id     = 1;
+    string reason = 2;
+}
+
+message CancelAppointmentResponse {
+    Appointment appointment = 1;
+}
+
+message RescheduleAppointmentRequest {
+    string id = 1;
+    google.protobuf.Timestamp new_start_time = 2;
+    string                    timezone       = 3;
+}
+
+message RescheduleAppointmentResponse {
+    Appointment appointment = 1;
+}
+
+message ConfirmAppointmentRequest {
+    string id = 1;
+}
+
+message ConfirmAppointmentResponse {
+    Appointment appointment = 1;
+}
+
+message CompleteAppointmentRequest {
+    string id           = 1;
+    string master_notes = 2;
+}
+
+message CompleteAppointmentResponse {
+    Appointment appointment = 1;
+}
+
+message MarkNoShowRequest {
+    string id = 1;
+}
+
+message MarkNoShowResponse {
+    Appointment appointment = 1;
+}
+
+service BookingService {
+    rpc CreateAppointment(CreateAppointmentRequest)           returns (CreateAppointmentResponse);
+    rpc GetAppointment(GetAppointmentRequest)                 returns (GetAppointmentResponse);
+    rpc ListMyAppointments(ListMyAppointmentsRequest)         returns (ListMyAppointmentsResponse);
+    rpc ListMasterAppointments(ListMasterAppointmentsRequest) returns (ListMasterAppointmentsResponse);
+    rpc CancelAppointment(CancelAppointmentRequest)           returns (CancelAppointmentResponse);
+    rpc RescheduleAppointment(RescheduleAppointmentRequest)   returns (RescheduleAppointmentResponse);
+    rpc ConfirmAppointment(ConfirmAppointmentRequest)         returns (ConfirmAppointmentResponse);
+    rpc CompleteAppointment(CompleteAppointmentRequest)       returns (CompleteAppointmentResponse);
+    rpc MarkNoShow(MarkNoShowRequest)                         returns (MarkNoShowResponse);
+}
