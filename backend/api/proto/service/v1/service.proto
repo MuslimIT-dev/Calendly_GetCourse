@@ -3,13 +3,8 @@ syntax = "proto3";
 package service.v1;
 
 import "google/protobuf/timestamp.proto";
-import "user/v1/user.proto";
 
 option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/service/v1;servicev1";
-
-// ============================================================
-// ENUMS
-// ============================================================
 
 // ============================================================
 // ENTITIES
