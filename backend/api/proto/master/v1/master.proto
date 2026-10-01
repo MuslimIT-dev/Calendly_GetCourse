@@ -46,12 +46,13 @@ message MasterProfile {
   repeated string       languages                   = 7;
   repeated Certificate  certificates                = 8;
   bool                  is_accepting_bookings       = 9;
+  google.protobuf.Timestamp works_until             = 10;
 
-  float                 avg_rating                  = 10;
-  int32                 reviews_count               = 11;
+  float                 avg_rating                  = 11;
+  int32                 reviews_count               = 12;
 
-  google.protobuf.Timestamp created_at = 12;
-  google.protobuf.Timestamp updated_at = 13;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp updated_at = 14;
 }
 
 message MasterCard {
@@ -107,6 +108,7 @@ message UpdateMasterRequest {
     int32       years_of_experience = 3;
     repeated    string languages    = 4;
     repeated Certificate certificates = 5;
+    google.protobuf.Timestamp works_until = 6;
 }
 
 message UpdateMasterResponse {
