@@ -1,0 +1,134 @@
+syntax = "proto3";
+
+package catalog.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/catalog/v1;catalogv1";
+
+// ============================================================
+// ENTITIES
+// ============================================================
+
+message Category {
+    string id   = 1;
+    string name = 2;
+
+    google.protobuf.Timestamp created_at = 8;
+    google.protobuf.Timestamp updated_at = 9;
+}
+
+message DefaultService {
+    string id            = 1;
+    string slug          = 2;
+    string name          = 3;
+    string description   = 4;
+    int32  duration_mins = 5;
+    int32  price         = 6;
+    string category      = 7;
+
+    google.protobuf.Timestamp created_at = 8;
+    google.protobuf.Timestamp updated_at = 9;
+}
+
+// ============================================================
+// REQUESTS / RESPONSES
+// ============================================================
+
+message ListCategoriesRequest {}
+
+message ListCategoriesResponse {
+    repeated Category categories = 1;
+}
+
+message ListDefaultServicesRequest {
+    string category_id = 1;
+}
+
+message ListDefaultServicesResponse {
+    repeated DefaultService services = 1;
+}
+
+message GetDefaultServiceRequest {
+    string id = 1;
+}
+
+message GetDefaultServiceResponse {
+    DefaultService service = 1;
+}
+
+message AddCategoryRequest {
+    string name = 1;
+}
+
+message AddCategoryResponse {
+    Category category = 1;
+}
+
+message UpdateCategoryRequest {
+    string category_id = 1;
+    string name        = 2;
+}
+
+message UpdateCategoryResponse {
+    Category category = 1;
+}
+
+message DeleteCategoryRequest {
+    category_id = 1;
+}
+
+message DeleteCategoryResponse {}
+
+message AddDefaultServiceRequest {
+    string slug          = 1;
+    string name          = 2;
+    string description   = 3;
+    int32  duration_mins = 4;
+    int32  price         = 5;
+    string category_id   = 6;
+}
+
+message AddDefaultServiceResponse {
+    DefaultService service = 1;
+}
+
+message UpdateDefaultServiceRequest {
+    string service_id    = 1;
+    string slug          = 2;
+    string name          = 3;
+    string description   = 4;
+    int32  duration_mins = 5;
+    int32  price         = 6;
+}
+
+message UpdateDefaultServiceResponse {
+    DefaultService service = 1;
+}
+
+message DeleteDefaultServiceRequest {
+    string service_id = 1;
+}
+
+message DeleteDefaultServiceResponse {}
+
+// ============================================================
+// SERVICE
+// ============================================================
+
+service CatalogService {
+    // Public
+    rpc ListCategories(ListCategoriesRequest)           returns (ListCategoriesResponse);
+    rpc ListDefaultServices(ListDefaultServicesRequest) returns (ListDefaultServicesResponse);
+    rpc GetDefaultService(GetDefaultServiceRequest)     returns (GetDefaultServiceResponse);
+}
+
+service AdminCatalogService {
+    // private
+    rpc AddCategory(AddCategoryRequest)                   returns (AddCategoryResponse);
+    rpc UpdateCategory(UpdateCategoryRequest)             returns (UpdateCategoryResponse);
+    rpc DeleteCategory(DeleteCategoryRequest)             returns (DeleteCategoryResponse);
+    rpc AddDefaultService(AddDefaultServiceRequest)       returns (AddDefaultServiceResponse);
+    rpc UpdateDefaultService(UpdateDefaultServiceRequest) returns (UpdateDefaultServiceResponse);
+    rpc DeleteDefaultService(DeleteDefaultServiceRequest) returns (DeleteDefaultServiceResponse);
+}
