@@ -101,17 +101,23 @@ message GetMasterResponse {
 }
 
 message UpdateMasterRequest {
-    string      slug                = 1;
-    string      bio                 = 2;
-    string      specialization      = 3;
-    int32       years_of_experience = 4;
-    repeated    string languages    = 5;
-    repeated Certificate certificates = 6;
-    bool        is_accepting_bookings = 7;
+    string      bio                 = 1;
+    string      specialization      = 2;
+    int32       years_of_experience = 3;
+    repeated    string languages    = 4;
+    repeated Certificate certificates = 5;
 }
 
 message UpdateMasterResponse {
     MasterProfile master = 1;
+}
+
+message UpdateSlugRequest {
+    string slug = 1;
+}
+
+message UpdateSlugResponse {
+    MasterProfile master = 1;    
 }
 
 // ============================================================
@@ -126,4 +132,5 @@ service MasterService {
 
     // private
     rpc UpdateMaster(UpdateMasterRequest) returns (UpdateMasterResponse);
+    rpc UpdateSlug(UpdateSlugRequest) returns (UpdateSlugResponse);
 }
