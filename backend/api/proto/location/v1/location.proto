@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package location.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/type/postal_address.proto";
+
+option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/location/v1;locationv1";
+
+message Location {
+    string                    id         = 1;
+    string                    master_id  = 2;
+    string                    name       = 3;
+    google.type.PostalAddress address    = 4;
+    string                    timezone   = 5;
+    bool                      is_online  = 6;
+    string                    meeting_url = 7;
+    bool                      is_active  = 8;
+
+    google.protobuf.Timestamp created_at = 9;
+    google.protobuf.Timestamp updated_at = 10;
+}
+
+message ListLocationsRequest {
+    string master_id = 1;
+    bool   only_active = 2;
+}
+
+message ListLocationsResponse {
+    repeated Location locations = 1;
+}
+
+message GetLocationRequest {
+    string id = 1;
+}
+
+message GetLocationResponse {
+    Location location = 1;
+}
+
+message CreateLocationRequest {
+    string                    name       = 1;
+    google.type.PostalAddress address    = 2;
+    string                    timezone   = 3;
+    bool                      is_online  = 4;
+    string                    meeting_url = 5;
+}
+
+message CreateLocationResponse {
+    Location location = 1;
+}
+
+message UpdateLocationRequest {
+    string                    id         = 1;
+    string                    name       = 2;
+    google.type.PostalAddress address    = 3;
+    string                    timezone   = 4;
+    bool                      is_online  = 5;
+    string                    meeting_url = 6;
+    bool                      is_active  = 7;
+}
+
+message UpdateLocationResponse {
+    Location location = 1;
+}
+
+message DeleteLocationRequest {
+    string id = 1;
+}
+
+message DeleteLocationResponse {}
+
+service LocationService {
+    rpc ListLocations(ListLocationsRequest)   returns (ListLocationsResponse);
+    rpc GetLocation(GetLocationRequest)       returns (GetLocationResponse);
+    rpc CreateLocation(CreateLocationRequest) returns (CreateLocationResponse);
+    rpc UpdateLocation(UpdateLocationRequest) returns (UpdateLocationResponse);
+    rpc DeleteLocation(DeleteLocationRequest) returns (DeleteLocationResponse);
+}
