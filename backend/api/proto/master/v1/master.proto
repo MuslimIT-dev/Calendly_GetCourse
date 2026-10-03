@@ -46,13 +46,14 @@ message MasterProfile {
   repeated string       languages                   = 7;
   repeated Certificate  certificates                = 8;
   bool                  is_accepting_bookings       = 9;
-  google.protobuf.Timestamp works_until             = 10;
+  string                meeting_url                 = 10;
+  google.protobuf.Timestamp works_until             = 11;
 
-  float                 avg_rating                  = 11;
-  int32                 reviews_count               = 12;
+  float                 avg_rating                  = 12;
+  int32                 reviews_count               = 13;
 
-  google.protobuf.Timestamp created_at = 13;
-  google.protobuf.Timestamp updated_at = 14;
+  google.protobuf.Timestamp created_at = 14;
+  google.protobuf.Timestamp updated_at = 15;
 }
 
 message MasterCard {
