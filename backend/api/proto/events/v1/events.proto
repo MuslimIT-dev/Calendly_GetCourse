@@ -1,0 +1,181 @@
+syntax = "proto3";
+
+package event.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/type/money.proto";
+
+option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/event/v1;eventv1";
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum EventType {
+    EVENT_TYPE_UNSPECIFIED            = 0;
+    EVENT_TYPE_APPOINTMENT_CREATED    = 1;
+    EVENT_TYPE_APPOINTMENT_CONFIRMED  = 2;
+    EVENT_TYPE_APPOINTMENT_CANCELLED  = 3;
+    EVENT_TYPE_APPOINTMENT_COMPLETED  = 4;
+    EVENT_TYPE_APPOINTMENT_RESCHEDULED = 5;
+    EVENT_TYPE_PAYMENT_SUCCEEDED      = 6;
+    EVENT_TYPE_PAYMENT_FAILED         = 7;
+    EVENT_TYPE_PAYMENT_REFUNDED       = 8;
+    EVENT_TYPE_REVIEW_CREATED         = 9;
+    EVENT_TYPE_USER_REGISTERED        = 10;
+    EVENT_TYPE_ENROLLMENT_CREATED     = 11;
+    EVENT_TYPE_ENROLLMENT_CANCELLED   = 12;
+}
+
+// ============================================================
+// ENVELOPE
+// ============================================================
+
+message Event {
+    string    event_id    = 1;  // UUID, для идемпотентности
+    EventType type        = 2;
+    string    aggregate_id = 3; // Entity ID (appointment_id, payment_id...)
+    string    actor_id    = 4;  // initiator
+
+    google.protobuf.Timestamp occurred_at = 5;
+
+    oneof payload {
+        AppointmentCreated    appointment_created    = 10;
+        AppointmentConfirmed  appointment_confirmed  = 11;
+        AppointmentCancelled  appointment_cancelled  = 12;
+        AppointmentCompleted  appointment_completed  = 13;
+        AppointmentRescheduled appointment_rescheduled = 14;
+
+        PaymentSucceeded      payment_succeeded      = 20;
+        PaymentFailed         payment_failed         = 21;
+        PaymentRefunded       payment_refunded       = 22;
+
+        ReviewCreated         review_created         = 30;
+        UserRegistered        user_registered        = 31;
+        EnrollmentCreated     enrollment_created     = 32;
+        EnrollmentCancelled   enrollment_cancelled   = 33;
+    }
+}
+
+// ============================================================
+// APPOINTMENT PAYLOADS
+// ============================================================
+
+message AppointmentCreated {
+    string appointment_id = 1;
+    string client_id      = 2;
+    string master_id      = 3;
+    string service_id     = 4;
+    string location_id    = 5;
+
+    google.protobuf.Timestamp start_time = 6;
+    google.protobuf.Timestamp end_time   = 7;
+
+    google.type.Money price = 8;
+    bool              is_online = 9;
+    string            timezone  = 10;
+}
+
+message AppointmentConfirmed {
+    string appointment_id = 1;
+    string client_id      = 2;
+    string master_id      = 3;
+    google.protobuf.Timestamp start_time = 4;
+}
+
+message AppointmentCancelled {
+    string appointment_id = 1;
+    string client_id      = 2;
+    string master_id      = 3;
+    string cancelled_by   = 4; // user_id
+    string reason         = 5;
+    google.protobuf.Timestamp start_time = 6;
+}
+
+message AppointmentCompleted {
+    string appointment_id = 1;
+    string client_id      = 2;
+    string master_id      = 3;
+    google.protobuf.Timestamp completed_at = 4;
+}
+
+message AppointmentRescheduled {
+    string appointment_id = 1;
+    string client_id      = 2;
+    string master_id      = 3;
+    google.protobuf.Timestamp old_start_time = 4;
+    google.protobuf.Timestamp new_start_time = 5;
+}
+
+// ============================================================
+// PAYMENT PAYLOADS
+// ============================================================
+
+message PaymentSucceeded {
+    string payment_id    = 1;
+    string user_id       = 2;
+    string reference_id  = 3; // appointment_id / course_id
+    string purpose       = 4; // "booking" / "course"
+    google.type.Money amount = 5;
+    string external_id   = 6;
+}
+
+message PaymentFailed {
+    string payment_id   = 1;
+    string user_id      = 2;
+    string reference_id = 3;
+    google.type.Money amount = 4;
+    string reason       = 5;
+}
+
+message PaymentRefunded {
+    string payment_id   = 1;
+    string user_id      = 2;
+    string reference_id = 3;
+    google.type.Money amount = 4;
+    string reason       = 5;
+}
+
+// ============================================================
+// REVIEW PAYLOADS
+// ============================================================
+
+message ReviewCreated {
+    string review_id    = 1;
+    string author_id    = 2;
+    string target_id    = 3;
+    string target_type  = 4; // "master" / "course"
+    int32  rating       = 5;
+    string comment      = 6;
+    string reference_id = 7;
+}
+
+// ============================================================
+// USER PAYLOADS
+// ============================================================
+
+message UserRegistered {
+    string user_id = 1;
+    string email   = 2;
+    string name    = 3;
+    string role    = 4;
+}
+
+// ============================================================
+// COURSE PAYLOADS
+// ============================================================
+
+message EnrollmentCreated {
+    string enrollment_id = 1;
+    string user_id       = 2;
+    string course_id     = 3;
+    string cohort_id     = 4;
+    google.type.Money price = 5;
+}
+
+message EnrollmentCancelled {
+    string enrollment_id = 1;
+    string user_id       = 2;
+    string course_id     = 3;
+    string reason        = 4;
+}
