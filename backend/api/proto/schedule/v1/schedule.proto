@@ -26,7 +26,7 @@ enum ExceptionType {
 
 message ScheduleRule {
     string                id             = 1;
-    string                master_id      = 2;
+    string                location_id    = 2;
     google.type.DayOfWeek day_of_week    = 3;
     bool                  is_working_day = 4;
 
@@ -44,7 +44,7 @@ message ScheduleRule {
 
 message Exception {
     string                id            = 1;
-    string                master_id     = 2;
+    string                location_id   = 2;
     string                date          = 3;
     bool                  is_full_day   = 4;
     ExceptionType         type          = 5;
@@ -74,11 +74,12 @@ message TimeSlot {
 // ============================================================
 
 message GetMonthScheduleRequest {
-    string master_id  = 1;
-    string service_id = 2;
-    int32  year       = 3;
-    int32  month      = 4;
-    string timezone   = 5;
+    string master_id   = 1;
+    string service_id  = 2;
+    string location_id = 3;
+    int32  year        = 4;
+    int32  month       = 5;
+    string timezone    = 6;
 }
 
 message GetMonthScheduleResponse {
@@ -86,10 +87,11 @@ message GetMonthScheduleResponse {
 }
 
 message GetDayScheduleRequest {
-    string master_id  = 1;
-    string service_id = 2;
-    string date       = 3;
-    string timezone   = 4;
+    string master_id   = 1;
+    string service_id  = 2;
+    string location_id = 3;
+    string date        = 4;
+    string timezone    = 5;
 }
 
 message GetDayScheduleResponse {
@@ -97,23 +99,27 @@ message GetDayScheduleResponse {
 }
 
 message GetNextAvailableSlotRequest {
-    string master_id  = 1;
-    string service_id = 2;
-    string timezone   = 3;
+    string master_id   = 1;
+    string service_id  = 2;
+    string location_id = 3;
+    string timezone    = 4;
 }
 
 message GetNextAvailableSlotResponse {
-    repeated google.protobuf.Timestamp start = 1; // max 3 available slots
+    repeated TimeSlot slots = 1;
 }
 
-message GetScheduleRulesRequest {}
+message GetScheduleRulesRequest {
+    string location_id = 1;
+}
 
 message GetScheduleRulesResponse {
     repeated ScheduleRule schedule_rules = 1;
 }
 
 message UpdateScheduleRulesRequest {
-    repeated ScheduleRule rules = 1;
+    string          location_id = 1;
+    repeated ScheduleRule rules = 2;
 }
 
 message UpdateScheduleRulesResponse {
@@ -121,14 +127,15 @@ message UpdateScheduleRulesResponse {
 }
 
 message AddExceptionRequest {
-    string                date         = 1;
-    ExceptionType         type         = 2;
-    bool                  is_full_day  = 3;
-    google.type.TimeOfDay custom_start = 4;
-    google.type.TimeOfDay custom_end   = 5;
-    google.type.TimeOfDay rest_start   = 6;
-    google.type.TimeOfDay rest_end     = 7;
-    string                reason       = 8;
+    string                location_id  = 1;
+    string                date         = 2;
+    ExceptionType         type         = 3;
+    bool                  is_full_day  = 4;
+    google.type.TimeOfDay custom_start = 5;
+    google.type.TimeOfDay custom_end   = 6;
+    google.type.TimeOfDay rest_start   = 7;
+    google.type.TimeOfDay rest_end     = 8;
+    string                reason       = 9;
 }
 
 message AddExceptionResponse {
@@ -142,8 +149,9 @@ message DeleteExceptionRequest {
 message DeleteExceptionResponse {}
 
 message ListExceptionsRequest {
-    string from_date = 1;  // "2025-10-01"
-    string to_date   = 2;  // "2025-10-31"
+    string location_id = 1;
+    string from_date = 2;  // "2025-10-01"
+    string to_date   = 3;  // "2025-10-31"
 }
 
 message ListExceptionsResponse {
