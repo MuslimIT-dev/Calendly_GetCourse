@@ -1,0 +1,179 @@
+syntax = "proto3";
+
+package notification.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/notification/v1;notificationv1";
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum NotificationChannel {
+    NOTIFICATION_CHANNEL_UNSPECIFIED = 0;
+    NOTIFICATION_CHANNEL_INAPP       = 1;
+    NOTIFICATION_CHANNEL_EMAIL       = 2;
+    NOTIFICATION_CHANNEL_TELEGRAM    = 3;
+    NOTIFICATION_CHANNEL_SMS         = 4;
+    NOTIFICATION_CHANNEL_PUSH        = 5;
+}
+
+enum NotificationType {
+    NOTIFICATION_TYPE_UNSPECIFIED          = 0;
+    NOTIFICATION_TYPE_APPOINTMENT_CREATED  = 1;
+    NOTIFICATION_TYPE_APPOINTMENT_CONFIRMED = 2;
+    NOTIFICATION_TYPE_APPOINTMENT_CANCELLED = 3;
+    NOTIFICATION_TYPE_APPOINTMENT_REMINDER = 4;
+    NOTIFICATION_TYPE_APPOINTMENT_RESCHEDULED = 5;
+    NOTIFICATION_TYPE_PAYMENT_SUCCEEDED    = 6;
+    NOTIFICATION_TYPE_PAYMENT_FAILED       = 7;
+    NOTIFICATION_TYPE_REVIEW_CREATED       = 8;
+    NOTIFICATION_TYPE_REVIEW_REPLIED       = 9;
+    NOTIFICATION_TYPE_COURSE_ENROLLED      = 10;
+    NOTIFICATION_TYPE_SYSTEM               = 11;
+}
+
+enum NotificationStatus {
+    NOTIFICATION_STATUS_UNSPECIFIED = 0;
+    NOTIFICATION_STATUS_PENDING     = 1;
+    NOTIFICATION_STATUS_SENT        = 2;
+    NOTIFICATION_STATUS_FAILED      = 3;
+    NOTIFICATION_STATUS_READ        = 4;
+}
+
+// ============================================================
+// ENTITIES
+// ============================================================
+
+message Notification {
+    string id      = 1;
+    string user_id = 2;
+
+    NotificationType    type    = 3;
+    NotificationChannel channel = 4;
+    NotificationStatus  status  = 5;
+
+    string title = 6;
+    string body  = 7;
+
+    string link = 8;
+
+    // Metadata for rendering (JSON)
+    string metadata = 9;
+
+    google.protobuf.Timestamp sent_at = 10;
+    google.protobuf.Timestamp read_at = 11;
+    google.protobuf.Timestamp created_at = 12;
+}
+
+message NotificationSettings {
+    string user_id = 1;
+
+    bool email_enabled    = 2;
+    bool telegram_enabled = 3;
+    bool sms_enabled      = 4;
+    bool push_enabled     = 5;
+
+    repeated NotificationType muted_types = 6;
+
+    bool reminder_24h = 7;
+    bool reminder_2h  = 8;
+    bool reminder_30m = 9;
+
+    google.protobuf.Timestamp updated_at = 10;
+}
+
+// ============================================================
+// REQUESTS / RESPONSES
+// ============================================================
+
+message ListMyNotificationsRequest {
+    NotificationStatus status_filter = 1;
+    int32  page_size  = 2;
+    string page_token = 3;
+}
+
+message ListMyNotificationsResponse {
+    repeated Notification notifications   = 1;
+    string               next_page_token  = 2;
+    int32                unread_count     = 3;
+}
+
+message MarkAsReadRequest {
+    string id = 1;
+}
+
+message MarkAsReadResponse {}
+
+message MarkAllAsReadRequest {}
+
+message MarkAllAsReadResponse {
+    int32 updated_count = 1;
+}
+
+message DeleteNotificationRequest {
+    string id = 1;
+}
+
+message DeleteNotificationResponse {}
+
+message GetUnreadCountRequest {}
+
+message GetUnreadCountResponse {
+    int32 count = 1;
+}
+
+message GetNotificationSettingsRequest {}
+
+message GetNotificationSettingsResponse {
+    NotificationSettings settings = 1;
+}
+
+message UpdateNotificationSettingsRequest {
+    bool email_enabled    = 1;
+    bool telegram_enabled = 2;
+    bool sms_enabled      = 3;
+    bool push_enabled     = 4;
+    repeated NotificationType muted_types = 5;
+    bool reminder_24h = 6;
+    bool reminder_2h  = 7;
+    bool reminder_30m = 8;
+}
+
+message UpdateNotificationSettingsResponse {
+    NotificationSettings settings = 1;
+}
+
+message SendNotificationRequest {
+    string              user_id  = 1;
+    NotificationType    type     = 2;
+    NotificationChannel channel  = 3;
+    string              title    = 4;
+    string              body     = 5;
+    string              link     = 6;
+    string              metadata = 7;
+}
+
+message SendNotificationResponse {
+    Notification notification = 1;
+}
+
+// ============================================================
+// SERVICE
+// ============================================================
+
+service NotificationService {
+    // Private (user)
+    rpc ListMyNotifications(ListMyNotificationsRequest)     returns (ListMyNotificationsResponse);
+    rpc MarkAsRead(MarkAsReadRequest)                       returns (MarkAsReadResponse);
+    rpc MarkAllAsRead(MarkAllAsReadRequest)                 returns (MarkAllAsReadResponse);
+    rpc DeleteNotification(DeleteNotificationRequest)       returns (DeleteNotificationResponse);
+    rpc GetUnreadCount(GetUnreadCountRequest)               returns (GetUnreadCountResponse);
+
+    rpc GetNotificationSettings(GetNotificationSettingsRequest)       returns (GetNotificationSettingsResponse);
+    rpc UpdateNotificationSettings(UpdateNotificationSettingsRequest) returns (UpdateNotificationSettingsResponse);
+
+    // Internal
+    rpc SendNotification(SendNotificationRequest)           returns (SendNotificationResponse);
+}
