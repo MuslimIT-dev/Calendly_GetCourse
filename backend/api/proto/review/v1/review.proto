@@ -1,0 +1,178 @@
+syntax = "proto3";
+
+package review.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/review/v1;reviewv1";
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum ReviewTarget {
+    REVIEW_TARGET_UNSPECIFIED = 0;
+    REVIEW_TARGET_MASTER      = 1;
+    REVIEW_TARGET_COURSE      = 2;
+}
+
+enum ReviewStatus {
+    REVIEW_STATUS_UNSPECIFIED = 0;
+    REVIEW_STATUS_PUBLISHED   = 1;
+    REVIEW_STATUS_HIDDEN      = 2;
+    REVIEW_STATUS_DELETED     = 3;
+}
+
+// ============================================================
+// ENTITIES
+// ============================================================
+
+message Review {
+    string id         = 1;
+    string author_id  = 2; // client_id
+    string target_id  = 3; // master_id or course_id
+    ReviewTarget target = 4;
+
+    string reference_id = 5; // appointment_id / enrollment_id
+
+    int32  rating  = 6;
+    string comment = 7;
+
+    string reply         = 8;
+    google.protobuf.Timestamp replied_at = 9;
+
+    ReviewStatus status = 10;
+
+    string author_name   = 11;
+    string author_avatar = 12;
+
+    google.protobuf.Timestamp created_at = 13;
+    google.protobuf.Timestamp updated_at = 14;
+}
+
+message ReviewSummary {
+    string target_id      = 1;
+    ReviewTarget target   = 2;
+    float  avg_rating     = 3;
+    int32  total_reviews  = 4;
+
+    int32  rating_1_count = 5;
+    int32  rating_2_count = 6;
+    int32  rating_3_count = 7;
+    int32  rating_4_count = 8;
+    int32  rating_5_count = 9;
+}
+
+// ============================================================
+// REQUESTS / RESPONSES
+// ============================================================
+
+message CreateReviewRequest {
+    ReviewTarget target       = 1;
+    string       target_id    = 2;
+    string       reference_id = 3; // appointment_id / enrollment_id
+    int32        rating       = 4;
+    string       comment      = 5;
+}
+
+message CreateReviewResponse {
+    Review review = 1;
+}
+
+message GetReviewRequest {
+    string id = 1;
+}
+
+message GetReviewResponse {
+    Review review = 1;
+}
+
+message ListTargetReviewsRequest {
+    ReviewTarget target    = 1;
+    string       target_id = 2;
+    int32        page_size  = 3;
+    string       page_token = 4;
+}
+
+message ListTargetReviewsResponse {
+    repeated Review reviews         = 1;
+    string          next_page_token = 2;
+    ReviewSummary   summary         = 3;
+}
+
+message ListMyReviewsRequest {
+    ReviewTarget target_filter = 1;
+    int32        page_size     = 2;
+    string       page_token    = 3;
+}
+
+message ListMyReviewsResponse {
+    repeated Review reviews         = 1;
+    string          next_page_token = 2;
+}
+
+message ReplyToReviewRequest {
+    string id    = 1;
+    string reply = 2;
+}
+
+message ReplyToReviewResponse {
+    Review review = 1;
+}
+
+message UpdateReviewRequest {
+    string id      = 1;
+    int32  rating  = 2;
+    string comment = 3;
+}
+
+message UpdateReviewResponse {
+    Review review = 1;
+}
+
+message DeleteReviewRequest {
+    string id = 1;
+}
+
+message DeleteReviewResponse {}
+
+message HideReviewRequest {
+    string id     = 1;
+    string reason = 2;
+}
+
+message HideReviewResponse {
+    Review review = 1;
+}
+
+message GetReviewSummaryRequest {
+    ReviewTarget target    = 1;
+    string       target_id = 2;
+}
+
+message GetReviewSummaryResponse {
+    ReviewSummary summary = 1;
+}
+
+// ============================================================
+// SERVICE
+// ============================================================
+
+service ReviewService {
+    // Private (CLIENT)
+    rpc CreateReview(CreateReviewRequest)       returns (CreateReviewResponse);
+    rpc UpdateReview(UpdateReviewRequest)       returns (UpdateReviewResponse);
+    rpc DeleteReview(DeleteReviewRequest)       returns (DeleteReviewResponse);
+    rpc ListMyReviews(ListMyReviewsRequest)     returns (ListMyReviewsResponse);
+
+    // Private (MASTER / автор курса)
+    rpc ReplyToReview(ReplyToReviewRequest)     returns (ReplyToReviewResponse);
+
+    // Private (OWNER / ADMIN)
+    rpc HideReview(HideReviewRequest)           returns (HideReviewResponse);
+
+    // Public
+    rpc GetReview(GetReviewRequest)             returns (GetReviewResponse);
+    rpc ListTargetReviews(ListTargetReviewsRequest) returns (ListTargetReviewsResponse);
+    rpc GetReviewSummary(GetReviewSummaryRequest)   returns (GetReviewSummaryResponse);
+}
