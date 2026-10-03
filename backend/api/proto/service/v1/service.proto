@@ -10,16 +10,30 @@ option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/prot
 // ENTITIES
 // ============================================================
 
-message Service {
-    string id               = 1;
-    string slug             = 2;
-    string name             = 3;
-    string description      = 4;
-    int32  duration_mins    = 5;
-    int32  price            = 6;
+message ServiceLocation {
+    string location_id   = 1;
+    int32  duration_mins = 2;
+    int32  price         = 3;
+    bool   is_active     = 4;
+}
 
-    google.protobuf.Timestamp created_at = 7;
-    google.protobuf.Timestamp updated_at = 8;
+message Service {
+    string id            = 1;
+    string slug          = 2;
+    string default_id    = 3;
+    string name          = 4;
+    string description   = 5;
+
+    // base data
+    int32  duration_mins = 6;
+    int32  price         = 7;
+
+    repeated ServiceLocation locations = 8;
+
+    bool is_active = 9;
+
+    google.protobuf.Timestamp created_at = 10;
+    google.protobuf.Timestamp updated_at = 11;
 }
 
 // ============================================================
@@ -33,10 +47,11 @@ message GetMyServicesResponse {
 }
 
 message AddServiceRequest {
-    string default_id       = 1;
-    string new_description  = 2; // if "" use the default
-    int32 duration_mins     = 3;
-    int32 price             = 4;
+    string default_id      = 1;
+    string new_description = 2;  // "" = take from the temp
+    int32  duration_mins   = 3;
+    int32  price           = 4;
+    repeated ServiceLocation locations = 5;
 }
 
 message AddServiceResponse {
@@ -44,10 +59,11 @@ message AddServiceResponse {
 }
 
 message UpdateServiceRequest {
-    string id               = 1;
-    string description      = 2;
-    int32  duration_mins    = 3;
-    int32  price            = 4;
+    string id            = 1;
+    string description   = 2;
+    int32  duration_mins = 3;
+    int32  price         = 4;
+    repeated ServiceLocation locations = 5;
 }
 
 message UpdateServiceResponse {
@@ -65,9 +81,8 @@ message DeleteServiceResponse {}
 // ============================================================
 
 service ServiceService {
-    // private
     rpc GetMyServices(GetMyServicesRequest) returns (GetMyServicesResponse);
-    rpc UpdateService(UpdateServiceRequest) returns (UpdateServicesResponse);
-    rpc AddService(AddServiceRequest)       returns (AddServicesResponse);
-    rpc DeleteService(DeleteServiceRequest) returns (DeleteServicesResponse);
+    rpc AddService(AddServiceRequest)       returns (AddServiceResponse);
+    rpc UpdateService(UpdateServiceRequest) returns (UpdateServiceResponse);
+    rpc DeleteService(DeleteServiceRequest) returns (DeleteServiceResponse);
 }
