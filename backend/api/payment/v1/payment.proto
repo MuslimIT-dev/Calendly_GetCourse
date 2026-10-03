@@ -1,0 +1,155 @@
+syntax = "proto3";
+
+package payment.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/type/money.proto";
+
+option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/payment/v1;paymentv1";
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum PaymentStatus {
+    PAYMENT_STATUS_UNSPECIFIED = 0;
+    PAYMENT_STATUS_PENDING     = 1;
+    PAYMENT_STATUS_PAID        = 2;
+    PAYMENT_STATUS_FAILED      = 3;
+    PAYMENT_STATUS_REFUNDED    = 4;
+    PAYMENT_STATUS_EXPIRED     = 5;
+}
+
+enum PaymentProvider {
+    PAYMENT_PROVIDER_UNSPECIFIED = 0;
+    PAYMENT_PROVIDER_YOOKASSA    = 1;
+    PAYMENT_PROVIDER_STRIPE      = 2;
+    PAYMENT_PROVIDER_TINKOFF     = 3;
+    PAYMENT_PROVIDER_MANUAL      = 4;
+}
+
+enum PaymentPurpose {
+    PAYMENT_PURPOSE_UNSPECIFIED = 0;
+    PAYMENT_PURPOSE_BOOKING     = 1;
+    PAYMENT_PURPOSE_COURSE      = 2;
+    PAYMENT_PURPOSE_SUBSCRIPTION = 3;
+}
+
+// ============================================================
+// ENTITIES
+// ============================================================
+
+message Payment {
+    string id       = 1;
+    string user_id  = 2;
+
+    google.type.Money amount = 3;
+
+    PaymentStatus   status   = 4;
+    PaymentProvider provider = 5;
+    PaymentPurpose  purpose  = 6;
+
+    string reference_id  = 7;
+    string external_id   = 8;
+    string payment_url   = 9;
+
+    string failure_reason = 10;
+    string receipt_url    = 11;
+
+    google.protobuf.Timestamp paid_at      = 12;
+    google.protobuf.Timestamp refunded_at  = 13;
+    google.protobuf.Timestamp expires_at   = 14;
+
+    google.protobuf.Timestamp created_at = 15;
+    google.protobuf.Timestamp updated_at = 16;
+}
+
+// ============================================================
+// REQUESTS / RESPONSES
+// ============================================================
+
+message CreatePaymentRequest {
+    PaymentPurpose  purpose      = 1;
+    PaymentProvider provider     = 2;
+    string          reference_id = 3;  // booking_id или course_id
+    string          return_url   = 4;  // куда вернуть после оплаты
+}
+
+message CreatePaymentResponse {
+    Payment payment = 1;
+}
+
+message GetPaymentRequest {
+    string id = 1;
+}
+
+message GetPaymentResponse {
+    Payment payment = 1;
+}
+
+message ListMyPaymentsRequest {
+    PaymentStatus  status_filter = 1;
+    PaymentPurpose purpose_filter = 2;
+    int32          page_size     = 3;
+    string         page_token    = 4;
+}
+
+message ListMyPaymentsResponse {
+    repeated Payment payments         = 1;
+    string           next_page_token  = 2;
+}
+
+message ListAllPaymentsRequest {
+    PaymentStatus  status_filter = 1;
+    string         user_id       = 2;
+    string         from_date     = 3;
+    string         to_date       = 4;
+    int32          page_size     = 5;
+    string         page_token    = 6;
+}
+
+message ListAllPaymentsResponse {
+    repeated Payment payments         = 1;
+    string           next_page_token  = 2;
+}
+
+message RefundPaymentRequest {
+    string id     = 1;
+    string reason = 2;
+}
+
+message RefundPaymentResponse {
+    Payment payment = 1;
+}
+
+message CancelPaymentRequest {
+    string id = 1;
+}
+
+message CancelPaymentResponse {
+    Payment payment = 1;
+}
+
+message PaymentWebhookRequest {
+    PaymentProvider provider = 1;
+    bytes           payload  = 2;  // raw body
+    string          signature = 3; // HMAC-подпись из заголовка
+}
+
+message PaymentWebhookResponse {
+    bool accepted = 1;
+}
+
+// ============================================================
+// SERVICE
+// ============================================================
+
+service PaymentService {
+    rpc CreatePayment(CreatePaymentRequest)       returns (CreatePaymentResponse);
+    rpc GetPayment(GetPaymentRequest)             returns (GetPaymentResponse);
+    rpc ListMyPayments(ListMyPaymentsRequest)     returns (ListMyPaymentsResponse);
+    rpc ListAllPayments(ListAllPaymentsRequest)   returns (ListAllPaymentsResponse);
+    rpc RefundPayment(RefundPaymentRequest)       returns (RefundPaymentResponse);
+    rpc CancelPayment(CancelPaymentRequest)       returns (CancelPaymentResponse);
+    rpc PaymentWebhook(PaymentWebhookRequest)     returns (PaymentWebhookResponse);
+}
