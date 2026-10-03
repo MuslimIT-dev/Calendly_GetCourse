@@ -47,21 +47,23 @@ message MasterProfile {
   repeated Certificate  certificates                = 8;
   bool                  is_accepting_bookings       = 9;
   string                meeting_url                 = 10;
-  google.protobuf.Timestamp works_until             = 11;
+  string                default_location_id         = 11;
+  google.protobuf.Timestamp works_until             = 12;
 
-  float                 avg_rating                  = 12;
-  int32                 reviews_count               = 13;
+  float                 avg_rating                  = 13;
+  int32                 reviews_count               = 14;
 
-  google.protobuf.Timestamp created_at = 14;
-  google.protobuf.Timestamp updated_at = 15;
+  google.protobuf.Timestamp created_at = 15;
+  google.protobuf.Timestamp updated_at = 16;
 }
 
 message MasterCard {
     user.v1.User    user            = 1;
     MasterProfile   master          = 2;
-    repeated service.v1.Service top_services = 3;
-    int32           total_services  = 4;
-    int32           min_price       = 5;
+    repeated location.v1.Location locations = 3;
+    repeated service.v1.Service top_services = 4;
+    int32           total_services  = 5;
+    int32           min_price       = 6;
 }
 
 message Filter {
