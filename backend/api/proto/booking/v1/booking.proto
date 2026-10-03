@@ -26,40 +26,43 @@ enum PaymentStatus {
 }
 
 message Appointment {
-    string id         = 1;
-    string client_id  = 2;
-    string master_id  = 3;
-    string service_id = 4;
+    string id          = 1;
+    string client_id   = 2;
+    string master_id   = 3;
+    string service_id  = 4;
+    string location_id = 5;
 
-    string slug         = 5;
-    string master_name  = 6;
-    string service_name = 7;
-    string address      = 8;
+    string slug         = 6;
+    string master_name  = 7;
+    string service_name = 8;
+    string location_name = 9;
+    string address      = 10;
 
-    google.protobuf.Timestamp start_time = 9;
-    google.protobuf.Timestamp end_time   = 10;
-    string                    timezone   = 11;
+    google.protobuf.Timestamp start_time = 11;
+    google.protobuf.Timestamp end_time   = 12;
+    string                    timezone   = 13;
 
-    AppointmentStatus status         = 12;
-    google.type.Money price          = 13;
-    PaymentStatus     payment_status = 14;
+    AppointmentStatus status         = 14;
+    google.type.Money price          = 15;
+    PaymentStatus     payment_status = 16;
 
-    bool   is_online   = 15;
-    string meeting_url = 16;
+    bool   is_online   = 17;
+    string meeting_url = 18;
 
-    string client_notes = 17;
-    string master_notes = 18;
+    string client_notes = 19;
+    string master_notes = 20;
 
-    google.protobuf.Timestamp created_at = 19;
-    google.protobuf.Timestamp updated_at = 20;
+    google.protobuf.Timestamp created_at = 21;
+    google.protobuf.Timestamp updated_at = 22;
 }
 
 message CreateAppointmentRequest {
-    string master_id  = 1;
-    string service_id = 2;
-    google.protobuf.Timestamp start_time = 3;
-    string                    timezone   = 4;
-    string                    client_notes = 5;
+    string master_id   = 1;
+    string service_id  = 2;
+    string location_id = 3;
+    google.protobuf.Timestamp start_time   = 4;
+    string                    timezone     = 5;
+    string                    client_notes = 6;
 }
 
 message CreateAppointmentResponse {
@@ -87,11 +90,12 @@ message ListMyAppointmentsResponse {
 
 message ListMasterAppointmentsRequest {
     string            master_id     = 1;
-    AppointmentStatus status_filter = 2;
-    string            from_date     = 3;
-    string            to_date       = 4;
-    int32             page_size     = 5;
-    string            page_token    = 6;
+    string            location_id   = 2;
+    AppointmentStatus status_filter = 3;
+    string            from_date     = 4;
+    string            to_date       = 5;
+    int32             page_size     = 6;
+    string            page_token    = 7;
 }
 
 message ListMasterAppointmentsResponse {
@@ -110,8 +114,9 @@ message CancelAppointmentResponse {
 
 message RescheduleAppointmentRequest {
     string id = 1;
-    google.protobuf.Timestamp new_start_time = 2;
-    string                    timezone       = 3;
+    string location_id = 2;
+    google.protobuf.Timestamp new_start_time = 3;
+    string                    timezone       = 4;
 }
 
 message RescheduleAppointmentResponse {
@@ -144,13 +149,13 @@ message MarkNoShowResponse {
 }
 
 service BookingService {
-    rpc CreateAppointment(CreateAppointmentRequest)           returns (CreateAppointmentResponse);
-    rpc GetAppointment(GetAppointmentRequest)                 returns (GetAppointmentResponse);
-    rpc ListMyAppointments(ListMyAppointmentsRequest)         returns (ListMyAppointmentsResponse);
-    rpc ListMasterAppointments(ListMasterAppointmentsRequest) returns (ListMasterAppointmentsResponse);
-    rpc CancelAppointment(CancelAppointmentRequest)           returns (CancelAppointmentResponse);
-    rpc RescheduleAppointment(RescheduleAppointmentRequest)   returns (RescheduleAppointmentResponse);
-    rpc ConfirmAppointment(ConfirmAppointmentRequest)         returns (ConfirmAppointmentResponse);
-    rpc CompleteAppointment(CompleteAppointmentRequest)       returns (CompleteAppointmentResponse);
-    rpc MarkNoShow(MarkNoShowRequest)                         returns (MarkNoShowResponse);
+    rpc CreateAppointment(CreateAppointmentRequest)             returns (CreateAppointmentResponse);
+    rpc GetAppointment(GetAppointmentRequest)                   returns (GetAppointmentResponse);
+    rpc ListMyAppointments(ListMyAppointmentsRequest)           returns (ListMyAppointmentsResponse);
+    rpc ListMasterAppointments(ListMasterAppointmentsRequest)   returns (ListMasterAppointmentsResponse);
+    rpc CancelAppointment(CancelAppointmentRequest)             returns (CancelAppointmentResponse);
+    rpc RescheduleAppointment(RescheduleAppointmentRequest)     returns (RescheduleAppointmentResponse);
+    rpc ConfirmAppointment(ConfirmAppointmentRequest)           returns (ConfirmAppointmentResponse);
+    rpc CompleteAppointment(CompleteAppointmentRequest)         returns (CompleteAppointmentResponse);
+    rpc MarkNoShow(MarkNoShowRequest)                           returns (MarkNoShowResponse);
 }
