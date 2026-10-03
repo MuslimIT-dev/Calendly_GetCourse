@@ -32,7 +32,7 @@ enum EventType {
 // ============================================================
 
 message Event {
-    string    event_id    = 1;  // UUID, для идемпотентности
+    string    event_id    = 1;
     EventType type        = 2;
     string    aggregate_id = 3; // Entity ID (appointment_id, payment_id...)
     string    actor_id    = 4;  // initiator
