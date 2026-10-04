@@ -25,6 +25,14 @@ enum PaymentStatus {
     PAYMENT_STATUS_FAILED      = 4;
 }
 
+enum CancelledBy {
+    CANCELLED_BY_UNSPECIFIED = 0;
+    CANCELLED_BY_CLIENT      = 1;
+    CANCELLED_BY_MASTER      = 2;
+    CANCELLED_BY_ADMIN       = 3;
+    CANCELLED_BY_SYSTEM      = 4;
+}
+
 message Appointment {
     string id          = 1;
     string client_id   = 2;
@@ -52,8 +60,12 @@ message Appointment {
     string client_notes = 19;
     string master_notes = 20;
 
-    google.protobuf.Timestamp created_at = 21;
-    google.protobuf.Timestamp updated_at = 22;
+    google.protobuf.Timestamp cancelled_at  = 21;
+    CancelledBy               cancelled_by  = 22;
+    string                    cancel_reason = 23;
+
+    google.protobuf.Timestamp created_at = 24;
+    google.protobuf.Timestamp updated_at = 25;
 }
 
 message CreateAppointmentRequest {
