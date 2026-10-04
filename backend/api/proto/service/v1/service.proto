@@ -20,20 +20,19 @@ message ServiceLocation {
 message Service {
     string id            = 1;
     string slug          = 2;
-    string default_id    = 3;
-    string name          = 4;
-    string description   = 5;
+    string name          = 3;
+    string description   = 4;
 
     // base data
-    int32  duration_mins = 6;
-    int32  price         = 7;
+    int32  duration_mins = 5;
+    int32  price         = 6;
 
-    repeated ServiceLocation locations = 8;
+    repeated ServiceLocation locations = 7;
 
-    bool is_active = 9;
+    bool is_active = 8;
 
-    google.protobuf.Timestamp created_at = 10;
-    google.protobuf.Timestamp updated_at = 11;
+    google.protobuf.Timestamp created_at = 9;
+    google.protobuf.Timestamp updated_at = 10;
 }
 
 // ============================================================

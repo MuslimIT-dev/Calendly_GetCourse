@@ -25,6 +25,13 @@ enum SortType {
     SORT_TYPE_EXPERIENCE    = 3;
 }
 
+enum ProficiencyType {
+    PROFICIENCY_TYPE_UNSPECIFIED  = 0;
+    PROFICIENCY_TYPE_BEGINNER     = 1;
+    PROFICIENCY_TYPE_INTERMEDIATE = 2;
+    PROFICIENCY_TYPE_ADVANCED     = 3;
+}
+
 // ============================================================
 // ENTITIES
 // ============================================================
@@ -36,25 +43,27 @@ message Certificate {
   string file_url     = 4;
 }
 
+message Language {
+    string          name        = 1;
+    ProficiencyType proficiency = 2;
+}
+
 message MasterProfile {
   string                user_id                     = 1;
   string                slug                        = 2;
   string                bio                         = 3;
-  string                category                    = 4;
-  string                specialization              = 5;
-  int32                 years_of_experience         = 6;
-  repeated string       languages                   = 7;
-  repeated Certificate  certificates                = 8;
-  bool                  is_accepting_bookings       = 9;
-  string                meeting_url                 = 10;
-  string                default_location_id         = 11;
-  google.protobuf.Timestamp works_until             = 12;
+  string                specialization              = 4;
+  int32                 years_of_experience         = 5;
+  repeated Language     languages                   = 6;
+  repeated Certificate  certificates                = 7;
+  bool                  is_accepting_bookings       = 8;
+  string                default_location_id         = 9;
 
-  float                 avg_rating                  = 13;
-  int32                 reviews_count               = 14;
+  float                 avg_rating                  = 10;
+  int32                 reviews_count               = 11;
 
-  google.protobuf.Timestamp created_at = 15;
-  google.protobuf.Timestamp updated_at = 16;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
 }
 
 message MasterCard {
@@ -111,7 +120,6 @@ message UpdateMasterRequest {
     int32       years_of_experience = 3;
     repeated    string languages    = 4;
     repeated Certificate certificates = 5;
-    google.protobuf.Timestamp works_until = 6;
 }
 
 message UpdateMasterResponse {
