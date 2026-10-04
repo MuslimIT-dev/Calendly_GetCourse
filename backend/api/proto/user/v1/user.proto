@@ -41,7 +41,7 @@ message User {
 // ============================================================
 
 message GetUserRequest {
-  string user_id = 1;
+  string id = 1;
 }
 
 message GetUserResponse {
@@ -58,7 +58,6 @@ message UpdateUserRequest {
   string name       = 1;
   string avatar_url = 2;
   string timezone   = 3;
-  string bio        = 4;
 }
 
 message UpdateUserResponse {
