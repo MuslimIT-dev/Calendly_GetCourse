@@ -107,7 +107,7 @@ message GetMasterRequest {
     string slug = 1;
 }
 
-GetMyMasterProfile {}
+message GetMyMasterProfile {}
 
 message GetMasterResponse {
     user.v1.User                user        = 1;
