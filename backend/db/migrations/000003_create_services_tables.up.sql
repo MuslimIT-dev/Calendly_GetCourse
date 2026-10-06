@@ -30,6 +30,7 @@ CREATE TABLE services (
     price INT NOT NULL,
     currency VARCHAR(3) NOT NULL,
     duration_mins INT NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
@@ -37,6 +38,9 @@ CREATE TABLE services (
 CREATE TABLE service_locations (
     service_id INT NOT NULL REFERENCES services(id) ON DELETE CASCADE,
     location_id INT NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
+    duration_mins INT NOT NULL,
+    price INT NOT NULL,
+    currency VARCHAR(3) NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,

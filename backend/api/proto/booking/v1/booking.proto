@@ -61,11 +61,13 @@ message Appointment {
     string master_notes = 20;
 
     google.protobuf.Timestamp cancelled_at  = 21;
-    CancelledBy               cancelled_by  = 22;
-    string                    cancel_reason = 23;
+    string     cancelled_by_user_id = 22;
+    CancelledBy               cancelled_by_role  = 23;
+    string                    cancel_reason = 24;
 
-    google.protobuf.Timestamp created_at = 24;
-    google.protobuf.Timestamp updated_at = 25;
+    google.protobuf.Timestamp created_at = 25;
+    google.protobuf.Timestamp updated_at = 26;
+    string created_by = 27;
 }
 
 message CreateAppointmentRequest {

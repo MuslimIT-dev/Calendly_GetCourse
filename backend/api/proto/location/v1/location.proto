@@ -8,14 +8,14 @@ import "google/type/postal_address.proto";
 option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/location/v1;locationv1";
 
 message Location {
-    string                    id         = 1;
-    string                    master_id  = 2;
-    string                    name       = 3;
-    google.type.PostalAddress address    = 4;
-    string                    timezone   = 5;
-    bool                      is_online  = 6;
-    string                    meeting_url = 7;
-    bool                      is_active  = 8;
+    string id         = 1;
+    string master_id  = 2;
+    string name       = 3;
+    string address    = 4;
+    string timezone   = 5;
+    bool   is_online  = 6;
+    string meeting_url = 7;
+    bool   is_active   = 8;
 
     google.protobuf.Timestamp created_at = 9;
     google.protobuf.Timestamp updated_at = 10;
@@ -39,11 +39,11 @@ message GetLocationResponse {
 }
 
 message CreateLocationRequest {
-    string                    name       = 1;
-    google.type.PostalAddress address    = 2;
-    string                    timezone   = 3;
-    bool                      is_online  = 4;
-    string                    meeting_url = 5;
+    string name        = 1;
+    string address     = 2;
+    string timezone    = 3;
+    bool   is_online   = 4;
+    string meeting_url = 5;
 }
 
 message CreateLocationResponse {
@@ -51,13 +51,13 @@ message CreateLocationResponse {
 }
 
 message UpdateLocationRequest {
-    string                    id         = 1;
-    string                    name       = 2;
-    google.type.PostalAddress address    = 3;
-    string                    timezone   = 4;
-    bool                      is_online  = 5;
-    string                    meeting_url = 6;
-    bool                      is_active  = 7;
+    string id         = 1;
+    string name       = 2;
+    string address    = 3;
+    string timezone   = 4;
+    bool   is_online  = 5;
+    string meeting_url = 6;
+    bool   is_active  = 7;
 }
 
 message UpdateLocationResponse {

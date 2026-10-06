@@ -13,9 +13,10 @@ option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/prot
 message Category {
     string id   = 1;
     string name = 2;
+    bool is_active = 3;
 
-    google.protobuf.Timestamp created_at = 8;
-    google.protobuf.Timestamp updated_at = 9;
+    google.protobuf.Timestamp created_at = 4;
+    google.protobuf.Timestamp updated_at = 5;
 }
 
 message DefaultService {
@@ -25,7 +26,7 @@ message DefaultService {
     string description   = 4;
     int32  duration_mins = 5;
     int32  price         = 6;
-    string category      = 7;
+    string category_id   = 7;
 
     google.protobuf.Timestamp created_at = 8;
     google.protobuf.Timestamp updated_at = 9;
@@ -75,7 +76,7 @@ message UpdateCategoryResponse {
 }
 
 message DeleteCategoryRequest {
-    category_id = 1;
+    string category_id = 1;
 }
 
 message DeleteCategoryResponse {}

@@ -28,6 +28,7 @@ CREATE TABLE appointments (
     master_notes TEXT,
 
     cancelled_at TIMESTAMPTZ,
+    cancelled_by_role SMALLINT CHECK (cancelled_by_role IN (1, 2, 3, 4))
     cancelled_by INT REFERENCES users(id) ON DELETE SET NULL,
     cancel_reason TEXT,
 

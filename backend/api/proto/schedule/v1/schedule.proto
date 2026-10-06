@@ -5,6 +5,7 @@ package schedule.v1;
 import "google/protobuf/timestamp.proto";
 import "google/type/timeofday.proto";
 import "google/type/dayofweek.proto";
+import "google/type/date.proto";
 
 option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/schedule/v1;schedulev1";
 
@@ -45,7 +46,7 @@ message ScheduleRule {
 message Exception {
     string                id            = 1;
     string                location_id   = 2;
-    string                date          = 3;
+    google.type.Date      date          = 3;
     bool                  is_full_day   = 4;
     ExceptionType         type          = 5;
 

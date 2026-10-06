@@ -5,6 +5,7 @@ package master.v1;
 import "google/protobuf/timestamp.proto";
 import "user/v1/user.proto";
 import "service/v1/service.proto";
+import "location/v1/location.proto";
 
 option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/master/v1;masterv1";
 
@@ -126,7 +127,9 @@ message UpdateMasterResponse {
     MasterProfile master = 1;
 }
 
-message UpdateSlugRequest {}
+message UpdateSlugRequest {
+    string slug = 1;
+}
 
 message UpdateSlugResponse {
     MasterProfile master = 1;    

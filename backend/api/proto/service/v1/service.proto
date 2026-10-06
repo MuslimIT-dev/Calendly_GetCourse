@@ -33,6 +33,8 @@ message Service {
 
     google.protobuf.Timestamp created_at = 9;
     google.protobuf.Timestamp updated_at = 10;
+    string default_service_id = 11;
+    string currency           = 12;
 }
 
 // ============================================================
@@ -50,7 +52,8 @@ message AddServiceRequest {
     string new_description = 2;  // "" = take from the temp
     int32  duration_mins   = 3;
     int32  price           = 4;
-    repeated ServiceLocation locations = 5;
+    string curremcy        = 5;
+    repeated ServiceLocation locations = 6;
 }
 
 message AddServiceResponse {
