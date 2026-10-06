@@ -12,11 +12,9 @@ option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/prot
 
 enum Role {
   ROLE_UNSPECIFIED = 0;
-  ROLE_GLOBAL_ADMIN = 1;
-  ROLE_OWNER       = 2;
-  ROLE_ADMIN       = 3;
-  ROLE_MASTER      = 4;
-  ROLE_CLIENT      = 5;
+  ROLE_ADMIN       = 1;
+  ROLE_MASTER      = 2;
+  ROLE_CLIENT      = 3;
 }
 
 // ============================================================
