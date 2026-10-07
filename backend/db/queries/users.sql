@@ -41,22 +41,13 @@ WHERE u.email = $1
 GROUP BY u.id;
 
 -- name: UpdateUser :one
-WITH updated AS (
-    UPDATE users
-    SET name       = COALESCE(sqlc.narg('name'), name),
-        avatar_url = COALESCE(sqlc.narg('avatar_url'), avatar_url),
-        timezone   = COALESCE(sqlc.narg('timezone'), timezone),
-        updated_at = NOW()
-    WHERE id = sqlc.arg('id')
-    RETURNING id, name, email, avatar_url, timezone, email_verified, created_at, updated_at
-)
-SELECT
-    u.id, u.name, u.email, u.avatar_url, u.timezone, u.email_verified,
-    u.created_at, u.updated_at,
-    array_agg(ur.role_id ORDER BY ur.role_id)::int[] AS role_ids
-FROM updated u
-LEFT JOIN user_roles ur ON ur.user_id = u.id
-GROUP BY u.id, u.name, u.email, u.avatar_url, u.timezone, u.email_verified, u.created_at, u.updated_at;
+UPDATE users
+SET name       = COALESCE(sqlc.narg('name'), name),
+    avatar_url = COALESCE(sqlc.narg('avatar_url'), avatar_url),
+    timezone   = COALESCE(sqlc.narg('timezone'), timezone),
+    updated_at = NOW()
+WHERE id = sqlc.arg('id')
+RETURNING id, name, email, avatar_url, timezone, email_verified, created_at, updated_at;
 
 -- name: SetEmailVerified :exec
 UPDATE users SET email_verified = TRUE, updated_at = NOW() WHERE id = $1 AND email_verified = FALSE;
@@ -93,40 +84,3 @@ ON CONFLICT DO NOTHING;
 SELECT EXISTS(
     SELECT 1 FROM user_roles WHERE user_id = $1 AND role_id = $2
 ) AS has_role;
-
--- ============================================================
--- EMAIL VERIFICATION
--- ============================================================
-
--- name: CreateEmailVerificationToken :one
-INSERT INTO email_verification_tokens (user_id, token_hash, expires_at)
-VALUES ($1, $2, $3)
-RETURNING id, user_id, expires_at, created_at;
-
--- name: GetEmailVerificationToken :one
-SELECT id, user_id, expires_at, used_at
-FROM email_verification_tokens
-WHERE token_hash = $1 AND used_at IS NULL AND expires_at > NOW();
-
--- name: MarkEmailVerificationTokenUsed :exec
-UPDATE email_verification_tokens SET used_at = NOW() WHERE id = $1;
-
--- ============================================================
--- PASSWORD RESET
--- ============================================================
-
--- name: CreatePasswordResetToken :one
-INSERT INTO password_reset_tokens (user_id, token_hash, expires_at)
-VALUES ($1, $2, $3)
-RETURNING id, user_id, expires_at, created_at;
-
--- name: GetPasswordResetToken :one
-SELECT id, user_id, expires_at, used_at
-FROM password_reset_tokens
-WHERE token_hash = $1 AND used_at IS NULL AND expires_at > NOW();
-
--- name: MarkPasswordResetTokenUsed :exec
-UPDATE password_reset_tokens SET used_at = NOW() WHERE id = $1;
-
--- name: DeleteExpiredPasswordResetTokens :exec
-DELETE FROM password_reset_tokens WHERE expires_at < NOW();

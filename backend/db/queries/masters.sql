@@ -258,12 +258,14 @@ WHERE id = $1;
 
 -- name: UpdateMasterRating :exec
 UPDATE masters SET
-    avg_rating    = (SELECT COALESCE(AVG(rating), 0) FROM reviews
-                     WHERE target_id = $1 AND target = 1 AND status = 1),
-    reviews_count = (SELECT COUNT(*) FROM reviews
-                     WHERE target_id = $1 AND target = 1 AND status = 1),
+    avg_rating = (SELECT COALESCE(AVG(r.rating), 0)
+                  FROM reviews r
+                  WHERE r.target_id = masters.id AND r.target = 1 AND r.status = 1),
+    reviews_count = (SELECT COUNT(*)
+                     FROM reviews r
+                     WHERE r.target_id = masters.id AND r.target = 1 AND r.status = 1),
     updated_at = NOW()
-WHERE id = $1;
+WHERE masters.id = $1;
 
 -- name: SetDefaultLocation :exec
 UPDATE masters SET default_location_id = $2, updated_at = NOW() WHERE id = $1;
@@ -279,8 +281,9 @@ DELETE FROM languages WHERE master_id = $1;
 
 -- name: InsertMasterLanguages :exec
 INSERT INTO languages (master_id, language, proficiency)
-SELECT $1, lang, prof::proficiency_level
-FROM unnest(sqlc.arg('languages')::text[], sqlc.arg('proficiencies')::text[]) AS t(lang, prof);
+SELECT $1, x.language, x.proficiency::proficiency_level
+FROM jsonb_to_recordset(sqlc.arg('data')::jsonb)
+     AS x(language TEXT, proficiency TEXT);
 
 -- name: GetMasterLanguages :many
 SELECT language, proficiency FROM languages WHERE master_id = $1;
@@ -290,13 +293,14 @@ DELETE FROM certificates WHERE master_id = $1;
 
 -- name: InsertMasterCertificates :exec
 INSERT INTO certificates (master_id, name, organization, year, file_url)
-SELECT $1, name, organization, year, file_url
-FROM unnest(
-    sqlc.arg('names')::text[],
-    sqlc.arg('organizations')::text[],
-    sqlc.arg('years')::int[],
-    sqlc.arg('file_urls')::text[]
-) AS t(name, organization, year, file_url);
+SELECT
+    sqlc.arg('master_id')::int,
+    x.name,
+    x.organization,
+    x.year,
+    x.file_url
+FROM jsonb_to_recordset(sqlc.arg('data')::jsonb)
+     AS x(name TEXT, organization TEXT, year INT, file_url TEXT);
 
 -- name: GetMasterCertificates :many
 SELECT id, name, organization, year, file_url FROM certificates WHERE master_id = $1;

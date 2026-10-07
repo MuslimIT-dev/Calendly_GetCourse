@@ -17,8 +17,8 @@ WHERE id = $1;
 SELECT
     n.id, n.user_id, n.type, n.channel, n.status, n.title, n.body, n.link,
     n.metadata, n.sent_at, n.read_at, n.created_at,
-    (SELECT COUNT(*)::int FROM notifications
-     WHERE user_id = sqlc.arg('user_id') AND status != 4) AS unread_count
+    (SELECT COUNT(*)::int FROM notifications n2
+     WHERE n2.user_id = sqlc.arg('user_id') AND n2.status != 4) AS unread_count
 FROM notifications n
 WHERE n.user_id = sqlc.arg('user_id')
   AND (sqlc.narg('status_filter')::smallint IS NULL OR n.status = sqlc.narg('status_filter'))
