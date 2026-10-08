@@ -34,7 +34,7 @@ type UserRepository interface {
 	AssignRole(ctx context.Context, userID int32, roleID Role) error
 	RemoveRole(ctx context.Context, userID int32, roleID Role) error
 	GetUserRoles(ctx context.Context, userID int32) ([]Role, error)
-	SetUserRoles(ctx context.Context, userID int32) error
+	DeleteUserRoles(ctx context.Context, userID int32) error
 	AddUserRoles(ctx context.Context, userID int32, roleIDs []Role) error
 	HasRole(ctx context.Context, userID int32, roleID Role) (bool, error)
 }
