@@ -16,7 +16,7 @@ type KafkaConsumer[T any] struct {
 
 func NewKafkaConsumer[T any](brokers []string, topic, groupID string, consumer domain.MessageConsumer[T]) *KafkaConsumer[T] {
 	return &KafkaConsumer[T]{
-		reader: {
+		reader: &kafka.Reader{
 			Brokers: brokers,
 			Topic:   topic,
 			GroupID: groupID,
@@ -28,6 +28,7 @@ func NewKafkaConsumer[T any](brokers []string, topic, groupID string, consumer d
 }
 
 func (kc *KafkaConsumer[T]) Start(ctx context.Context) error {
+	defer kc.reader.Close()
 	log.Printf("Starting Kafka consumer for topic: %s", kc.reader.Config().Topic)
 
 	for {
