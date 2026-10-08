@@ -11,6 +11,9 @@ type User struct {
     Timezone      string
     EmailVerified bool
     Roles         []Role
+
+	CreatedAt     time.Time
+    UpdatedAt     time.Time
 }
 
 type Role int32
