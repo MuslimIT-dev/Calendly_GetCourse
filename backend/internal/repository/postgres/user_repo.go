@@ -84,3 +84,25 @@ func convertRoleIDsToRoles(roleIDs []int32) []domain.Role {
 	}
 	return roles
 }
+
+func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
+	row, err := r.q.GetUserByEmail(ctx, email)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrUserNotFound
+		}
+		return nil, err
+	}
+
+	return &domain.User{
+		ID:            row.ID,
+		Name:          row.Name.String,
+		Email:         row.Email,
+		AvatarURL:     row.AvatarUrl.String,
+		Timezone:      row.Timezone.String,
+		EmailVerified: row.EmailVerified.Bool,
+		Roles:         convertRoleIDsToRoles(row.RoleIds),
+		CreatedAt:     row.CreatedAt.Time,
+		UpdatedAt:     row.UpdatedAt.Time,
+	}, nil
+}
