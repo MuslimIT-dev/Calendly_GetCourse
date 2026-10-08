@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 
     "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
-    "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/postgres/db"
+    "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/db"
 )
 
 type UserRepo struct {
@@ -92,6 +92,30 @@ func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*domain.Us
 			return nil, domain.ErrUserNotFound
 		}
 		return nil, err
+	}
+
+	return &domain.User{
+		ID:            row.ID,
+		Name:          row.Name.String,
+		Email:         row.Email,
+		AvatarURL:     row.AvatarUrl.String,
+		Timezone:      row.Timezone.String,
+		EmailVerified: row.EmailVerified.Bool,
+		Roles:         convertRoleIDsToRoles(row.RoleIds),
+		CreatedAt:     row.CreatedAt.Time,
+		UpdatedAt:     row.UpdatedAt.Time,
+	}, nil
+}
+
+func (r *UserRepo) UpdateUser(ctx context.Context, u *domain.User) (*domain.User, error) {
+	row, err := r.q.UpdateUser(ctx, db.UpdateUserParams{
+		ID:        u.ID,
+		AvatarUrl  u.AvatarURL,
+		Name:	   u.Name,
+		Timezone:  u.Timezone,
+	})
+	if err != nil {
+		return nil, err	
 	}
 
 	return &domain.User{
