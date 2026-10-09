@@ -1200,7 +1200,7 @@ const file_payment_v1_payment_proto_rawDesc = "" +
 	"\x0fListAllPayments\x12\".payment.v1.ListAllPaymentsRequest\x1a#.payment.v1.ListAllPaymentsResponse\x12T\n" +
 	"\rRefundPayment\x12 .payment.v1.RefundPaymentRequest\x1a!.payment.v1.RefundPaymentResponse\x12T\n" +
 	"\rCancelPayment\x12 .payment.v1.CancelPaymentRequest\x1a!.payment.v1.CancelPaymentResponse\x12W\n" +
-	"\x0ePaymentWebhook\x12!.payment.v1.PaymentWebhookRequest\x1a\".payment.v1.PaymentWebhookResponseBSZQgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/payment/v1;paymentv1b\x06proto3"
+	"\x0ePaymentWebhook\x12!.payment.v1.PaymentWebhookRequest\x1a\".payment.v1.PaymentWebhookResponseBPZNgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/payment/v1;paymentv1b\x06proto3"
 
 var (
 	file_payment_v1_payment_proto_rawDescOnce sync.Once

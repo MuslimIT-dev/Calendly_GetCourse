@@ -1465,7 +1465,7 @@ const file_schedule_v1_schedule_proto_rawDesc = "" +
 	"\x13UpdateScheduleRules\x12'.schedule.v1.UpdateScheduleRulesRequest\x1a(.schedule.v1.UpdateScheduleRulesResponse\x12Y\n" +
 	"\x0eListExceptions\x12\".schedule.v1.ListExceptionsRequest\x1a#.schedule.v1.ListExceptionsResponse\x12S\n" +
 	"\fAddException\x12 .schedule.v1.AddExceptionRequest\x1a!.schedule.v1.AddExceptionResponse\x12\\\n" +
-	"\x0fDeleteException\x12#.schedule.v1.DeleteExceptionRequest\x1a$.schedule.v1.DeleteExceptionResponseBUZSgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/schedule/v1;schedulev1b\x06proto3"
+	"\x0fDeleteException\x12#.schedule.v1.DeleteExceptionRequest\x1a$.schedule.v1.DeleteExceptionResponseBRZPgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/schedule/v1;schedulev1b\x06proto3"
 
 var (
 	file_schedule_v1_schedule_proto_rawDescOnce sync.Once

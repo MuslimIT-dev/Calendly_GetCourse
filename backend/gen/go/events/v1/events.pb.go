@@ -1464,7 +1464,7 @@ const file_events_v1_events_proto_rawDesc = "" +
 	"\x1aEVENT_TYPE_USER_REGISTERED\x10\n" +
 	"\x12!\n" +
 	"\x1dEVENT_TYPE_ENROLLMENT_CREATED\x10\v\x12#\n" +
-	"\x1fEVENT_TYPE_ENROLLMENT_CANCELLED\x10\fBOZMgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/event/v1;eventv1b\x06proto3"
+	"\x1fEVENT_TYPE_ENROLLMENT_CANCELLED\x10\fBMZKgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/events/v1;eventv1b\x06proto3"
 
 var (
 	file_events_v1_events_proto_rawDescOnce sync.Once

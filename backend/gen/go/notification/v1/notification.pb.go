@@ -1380,7 +1380,7 @@ const file_notification_v1_notification_proto_rawDesc = "" +
 	"\x0eGetUnreadCount\x12&.notification.v1.GetUnreadCountRequest\x1a'.notification.v1.GetUnreadCountResponse\x12|\n" +
 	"\x17GetNotificationSettings\x12/.notification.v1.GetNotificationSettingsRequest\x1a0.notification.v1.GetNotificationSettingsResponse\x12\x85\x01\n" +
 	"\x1aUpdateNotificationSettings\x122.notification.v1.UpdateNotificationSettingsRequest\x1a3.notification.v1.UpdateNotificationSettingsResponse\x12g\n" +
-	"\x10SendNotification\x12(.notification.v1.SendNotificationRequest\x1a).notification.v1.SendNotificationResponseB]Z[github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/notification/v1;notificationv1b\x06proto3"
+	"\x10SendNotification\x12(.notification.v1.SendNotificationRequest\x1a).notification.v1.SendNotificationResponseBZZXgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/notification/v1;notificationv1b\x06proto3"
 
 var (
 	file_notification_v1_notification_proto_rawDescOnce sync.Once

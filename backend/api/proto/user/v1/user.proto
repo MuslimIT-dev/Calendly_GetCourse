@@ -4,7 +4,7 @@ package user.v1;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/user/v1;userv1";
+option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1;userv1";
 
 // ============================================================
 // ENUMS

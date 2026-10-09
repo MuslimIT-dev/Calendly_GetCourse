@@ -7,7 +7,7 @@
 package authv1
 
 import (
-	v1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/user/v1"
+	v1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -1127,7 +1127,7 @@ const file_auth_v1_auth_proto_rawDesc = "" +
 	"\x06Logout\x12\x16.auth.v1.LogoutRequest\x1a\x17.auth.v1.LogoutResponse\x12B\n" +
 	"\tLogoutAll\x12\x19.auth.v1.LogoutAllRequest\x1a\x1a.auth.v1.LogoutAllResponse\x12Q\n" +
 	"\x0eChangePassword\x12\x1e.auth.v1.ChangePasswordRequest\x1a\x1f.auth.v1.ChangePasswordResponse\x12K\n" +
-	"\fListSessions\x12\x1c.auth.v1.ListSessionsRequest\x1a\x1d.auth.v1.ListSessionsResponseBMZKgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/auth/v1;authv1b\x06proto3"
+	"\fListSessions\x12\x1c.auth.v1.ListSessionsRequest\x1a\x1d.auth.v1.ListSessionsResponseBJZHgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/auth/v1;authv1b\x06proto3"
 
 var (
 	file_auth_v1_auth_proto_rawDescOnce sync.Once

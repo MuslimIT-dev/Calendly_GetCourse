@@ -496,7 +496,7 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\aGetUser\x12\x17.user.v1.GetUserRequest\x1a\x18.user.v1.GetUserResponse\x126\n" +
 	"\x05GetMe\x12\x15.user.v1.GetMeRequest\x1a\x16.user.v1.GetMeResponse\x12E\n" +
 	"\n" +
-	"UpdateUser\x12\x1a.user.v1.UpdateUserRequest\x1a\x1b.user.v1.UpdateUserResponseBMZKgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/user/v1;userv1b\x06proto3"
+	"UpdateUser\x12\x1a.user.v1.UpdateUserRequest\x1a\x1b.user.v1.UpdateUserResponseBJZHgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1;userv1b\x06proto3"
 
 var (
 	file_user_v1_user_proto_rawDescOnce sync.Once

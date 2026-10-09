@@ -5,7 +5,7 @@ package event.v1;
 import "google/protobuf/timestamp.proto";
 import "google/type/money.proto";
 
-option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/event/v1;eventv1";
+option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/events/v1;eventv1";
 
 // ============================================================
 // ENUMS

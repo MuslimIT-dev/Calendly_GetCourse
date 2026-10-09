@@ -1151,7 +1151,7 @@ const file_catalog_v1_catalog_proto_rawDesc = "" +
 	"\x0eDeleteCategory\x12!.catalog.v1.DeleteCategoryRequest\x1a\".catalog.v1.DeleteCategoryResponse\x12`\n" +
 	"\x11AddDefaultService\x12$.catalog.v1.AddDefaultServiceRequest\x1a%.catalog.v1.AddDefaultServiceResponse\x12i\n" +
 	"\x14UpdateDefaultService\x12'.catalog.v1.UpdateDefaultServiceRequest\x1a(.catalog.v1.UpdateDefaultServiceResponse\x12i\n" +
-	"\x14DeleteDefaultService\x12'.catalog.v1.DeleteDefaultServiceRequest\x1a(.catalog.v1.DeleteDefaultServiceResponseBSZQgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/catalog/v1;catalogv1b\x06proto3"
+	"\x14DeleteDefaultService\x12'.catalog.v1.DeleteDefaultServiceRequest\x1a(.catalog.v1.DeleteDefaultServiceResponseBPZNgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/catalog/v1;catalogv1b\x06proto3"
 
 var (
 	file_catalog_v1_catalog_proto_rawDescOnce sync.Once

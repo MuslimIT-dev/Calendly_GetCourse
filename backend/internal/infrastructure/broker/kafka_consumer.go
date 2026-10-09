@@ -16,13 +16,13 @@ type KafkaConsumer[T any] struct {
 
 func NewKafkaConsumer[T any](brokers []string, topic, groupID string, consumer domain.MessageConsumer[T]) *KafkaConsumer[T] {
 	return &KafkaConsumer[T]{
-		reader: &kafka.Reader{
-			Brokers: brokers,
-			Topic:   topic,
-			GroupID: groupID,
+		reader: kafka.NewReader(kafka.ReaderConfig{
+			Brokers:  brokers,
+			Topic:    topic,
+			GroupID:  groupID,
 			MinBytes: 10e3, // 10KB
 			MaxBytes: 10e6, // 10MB
-		},
+		}),
 		consumer: consumer,
 	}
 }

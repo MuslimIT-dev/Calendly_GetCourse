@@ -717,7 +717,7 @@ const file_location_v1_location_proto_rawDesc = "" +
 	"\vGetLocation\x12\x1f.location.v1.GetLocationRequest\x1a .location.v1.GetLocationResponse\x12Y\n" +
 	"\x0eCreateLocation\x12\".location.v1.CreateLocationRequest\x1a#.location.v1.CreateLocationResponse\x12Y\n" +
 	"\x0eUpdateLocation\x12\".location.v1.UpdateLocationRequest\x1a#.location.v1.UpdateLocationResponse\x12Y\n" +
-	"\x0eDeleteLocation\x12\".location.v1.DeleteLocationRequest\x1a#.location.v1.DeleteLocationResponseBUZSgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/location/v1;locationv1b\x06proto3"
+	"\x0eDeleteLocation\x12\".location.v1.DeleteLocationRequest\x1a#.location.v1.DeleteLocationResponseBRZPgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/location/v1;locationv1b\x06proto3"
 
 var (
 	file_location_v1_location_proto_rawDescOnce sync.Once

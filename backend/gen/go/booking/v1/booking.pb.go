@@ -1534,7 +1534,7 @@ const file_booking_v1_booking_proto_rawDesc = "" +
 	"\x12ConfirmAppointment\x12%.booking.v1.ConfirmAppointmentRequest\x1a&.booking.v1.ConfirmAppointmentResponse\x12f\n" +
 	"\x13CompleteAppointment\x12&.booking.v1.CompleteAppointmentRequest\x1a'.booking.v1.CompleteAppointmentResponse\x12K\n" +
 	"\n" +
-	"MarkNoShow\x12\x1d.booking.v1.MarkNoShowRequest\x1a\x1e.booking.v1.MarkNoShowResponseBSZQgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/booking/v1;bookingv1b\x06proto3"
+	"MarkNoShow\x12\x1d.booking.v1.MarkNoShowRequest\x1a\x1e.booking.v1.MarkNoShowResponseBPZNgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/booking/v1;bookingv1b\x06proto3"
 
 var (
 	file_booking_v1_booking_proto_rawDescOnce sync.Once

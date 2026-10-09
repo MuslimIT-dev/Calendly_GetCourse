@@ -4,7 +4,7 @@ package catalog.v1;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/catalog/v1;catalogv1";
+option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/catalog/v1;catalogv1";
 
 // ============================================================
 // ENTITIES

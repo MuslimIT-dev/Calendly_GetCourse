@@ -1,28 +1,31 @@
 package domain
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 type User struct {
-    ID            int32
-    Name          string
-    Email         string
-    PasswordHash  string
-    AvatarURL     string
-    Timezone      string
-    EmailVerified bool
-    Roles         []Role
+	ID            int32
+	Name          string
+	Email         string
+	PasswordHash  string
+	AvatarURL     string
+	Timezone      string
+	EmailVerified bool
+	Roles         []Role
 
-	CreatedAt     time.Time
-    UpdatedAt     time.Time
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type Role int32
 
 const (
 	RoleUnspecified Role = 0
-	RoleAdmin		Role = 1
-	RoleMaster		Role = 2
-	RoleUser		Role = 3
+	RoleAdmin       Role = 1
+	RoleMaster      Role = 2
+	RoleUser        Role = 3
 )
 
 type UserRepository interface {

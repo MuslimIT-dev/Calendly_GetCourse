@@ -5,7 +5,7 @@ package booking.v1;
 import "google/protobuf/timestamp.proto";
 import "google/type/money.proto";
 
-option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/booking/v1;bookingv1";
+option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/booking/v1;bookingv1";
 
 enum AppointmentStatus {
     APPOINTMENT_STATUS_UNSPECIFIED         = 0;

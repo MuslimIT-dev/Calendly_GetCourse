@@ -7,7 +7,7 @@ import "user/v1/user.proto";
 import "service/v1/service.proto";
 import "location/v1/location.proto";
 
-option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/master/v1;masterv1";
+option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/master/v1;masterv1";
 
 // ============================================================
 // ENUMS

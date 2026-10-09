@@ -1408,7 +1408,7 @@ const file_review_v1_review_proto_rawDesc = "" +
 	"HideReview\x12\x1c.review.v1.HideReviewRequest\x1a\x1d.review.v1.HideReviewResponse\x12F\n" +
 	"\tGetReview\x12\x1b.review.v1.GetReviewRequest\x1a\x1c.review.v1.GetReviewResponse\x12^\n" +
 	"\x11ListTargetReviews\x12#.review.v1.ListTargetReviewsRequest\x1a$.review.v1.ListTargetReviewsResponse\x12[\n" +
-	"\x10GetReviewSummary\x12\".review.v1.GetReviewSummaryRequest\x1a#.review.v1.GetReviewSummaryResponseBQZOgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/review/v1;reviewv1b\x06proto3"
+	"\x10GetReviewSummary\x12\".review.v1.GetReviewSummaryRequest\x1a#.review.v1.GetReviewSummaryResponseBNZLgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/review/v1;reviewv1b\x06proto3"
 
 var (
 	file_review_v1_review_proto_rawDescOnce sync.Once

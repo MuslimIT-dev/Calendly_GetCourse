@@ -7,7 +7,7 @@ import "google/type/timeofday.proto";
 import "google/type/dayofweek.proto";
 import "google/type/date.proto";
 
-option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/schedule/v1;schedulev1";
+option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/schedule/v1;schedulev1";
 
 // ============================================================
 // ENUMS

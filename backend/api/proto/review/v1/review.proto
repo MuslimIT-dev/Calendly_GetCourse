@@ -4,7 +4,7 @@ package review.v1;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/review/v1;reviewv1";
+option go_package = "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/review/v1;reviewv1";
 
 // ============================================================
 // ENUMS

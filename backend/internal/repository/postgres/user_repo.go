@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"strings"
-	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 
-    "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
-    "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/db"
+	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
+	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/db"
 )
 
 type UserRepo struct {
@@ -29,10 +30,10 @@ func (r *UserRepo) Create(ctx context.Context, u *domain.User, roles []domain.Ro
 	}
 
 	row, err := r.q.CreateUser(ctx, db.CreateUserParams{
-		Name:         u.Name,
+		Name:         pgtype.Text{String: u.Name, Valid: true},
 		Email:        u.Email,
 		PasswordHash: u.PasswordHash,
-		RoleIDs:      roleIDs,
+		RoleIds:      roleIDs,
 	})
 	if err != nil {
 		var pgErr *pgconn.PgError
@@ -44,14 +45,14 @@ func (r *UserRepo) Create(ctx context.Context, u *domain.User, roles []domain.Ro
 
 	return &domain.User{
 		ID:            row.ID,
-		Name:          row.Name,
+		Name:          row.Name.String,
 		Email:         row.Email,
-		AvatarURL:     row.AvatarURL,
-		Timezone:      row.Timezone,
-		EmailVerified: row.EmailVerified,
+		AvatarURL:     row.AvatarUrl.String,
+		Timezone:      row.Timezone.String,
+		EmailVerified: row.EmailVerified.Bool,
 		Roles:         roles,
-		CreatedAt:     row.CreatedAt,
-		UpdatedAt:     row.UpdatedAt,
+		CreatedAt:     row.CreatedAt.Time,
+		UpdatedAt:     row.UpdatedAt.Time,
 	}, nil
 }
 
@@ -110,15 +111,20 @@ func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*domain.Us
 func (r *UserRepo) UpdateUser(ctx context.Context, u *domain.User) (*domain.User, error) {
 	row, err := r.q.UpdateUser(ctx, db.UpdateUserParams{
 		ID:        u.ID,
-		AvatarUrl  u.AvatarURL,
-		Name:	   u.Name,
-		Timezone:  u.Timezone,
+		AvatarUrl: pgtype.Text{String: u.AvatarURL, Valid: u.AvatarURL != ""},
+		Name:      pgtype.Text{String: u.Name, Valid: u.Name != ""},
+		Timezone:  pgtype.Text{String: u.Timezone, Valid: u.Timezone != ""},
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, domain.ErrUserNotFound
 		}
-		return nil, err	
+		return nil, err
+	}
+
+	roleIDs, err := r.q.GetUserRoles(ctx, row.ID)
+	if err != nil {
+		return nil, err
 	}
 
 	return &domain.User{
@@ -128,13 +134,13 @@ func (r *UserRepo) UpdateUser(ctx context.Context, u *domain.User) (*domain.User
 		AvatarURL:     row.AvatarUrl.String,
 		Timezone:      row.Timezone.String,
 		EmailVerified: row.EmailVerified.Bool,
-		Roles:         convertRoleIDsToRoles(row.RoleIds),
+		Roles:         convertRoleIDsToRoles(roleIDs),
 		CreatedAt:     row.CreatedAt.Time,
 		UpdatedAt:     row.UpdatedAt.Time,
 	}, nil
 }
 
-func (r *UserRepo) SetEmailVerified(ctx context.Context, id int32) (error) {
+func (r *UserRepo) SetEmailVerified(ctx context.Context, id int32) error {
 	err := r.q.SetEmailVerified(ctx, id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -208,8 +214,8 @@ func (r *UserRepo) GetUserRoles(ctx context.Context, userID int32) ([]domain.Rol
 	}
 
 	roles := make([]domain.Role, len(rows))
-	for i, row := range rows {
-		roles[i] = domain.Role(row.RoleID)
+	for i, roleID := range rows {
+		roles[i] = domain.Role(roleID)
 	}
 	return roles, nil
 }
@@ -233,7 +239,7 @@ func (r *UserRepo) AddUserRoles(ctx context.Context, userID int32, roleIDs []dom
 
 	err := r.q.AddUserRoles(ctx, db.AddUserRolesParams{
 		UserID:  userID,
-		RoleIDs: intRoleIDs,
+		Column2: intRoleIDs,
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

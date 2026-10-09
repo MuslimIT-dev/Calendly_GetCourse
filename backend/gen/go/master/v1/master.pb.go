@@ -7,9 +7,9 @@
 package masterv1
 
 import (
-	v11 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/location/v1"
-	v12 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/service/v1"
-	v1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/user/v1"
+	v11 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/location/v1"
+	v12 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/service/v1"
+	v1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -1188,7 +1188,7 @@ const file_master_v1_master_proto_rawDesc = "" +
 	"\x12GetMyMasterProfile\x12$.master.v1.GetMyMasterProfileRequest\x1a\x1c.master.v1.GetMasterResponse\x12O\n" +
 	"\fUpdateMaster\x12\x1e.master.v1.UpdateMasterRequest\x1a\x1f.master.v1.UpdateMasterResponse\x12I\n" +
 	"\n" +
-	"UpdateSlug\x12\x1c.master.v1.UpdateSlugRequest\x1a\x1d.master.v1.UpdateSlugResponseBQZOgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/master/v1;masterv1b\x06proto3"
+	"UpdateSlug\x12\x1c.master.v1.UpdateSlugRequest\x1a\x1d.master.v1.UpdateSlugResponseBNZLgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/master/v1;masterv1b\x06proto3"
 
 var (
 	file_master_v1_master_proto_rawDescOnce sync.Once

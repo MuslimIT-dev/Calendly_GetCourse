@@ -688,7 +688,7 @@ const file_service_v1_service_proto_rawDesc = "" +
 	"\n" +
 	"AddService\x12\x1d.service.v1.AddServiceRequest\x1a\x1e.service.v1.AddServiceResponse\x12T\n" +
 	"\rUpdateService\x12 .service.v1.UpdateServiceRequest\x1a!.service.v1.UpdateServiceResponse\x12T\n" +
-	"\rDeleteService\x12 .service.v1.DeleteServiceRequest\x1a!.service.v1.DeleteServiceResponseBSZQgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/service/v1;servicev1b\x06proto3"
+	"\rDeleteService\x12 .service.v1.DeleteServiceRequest\x1a!.service.v1.DeleteServiceResponseBPZNgithub.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/service/v1;servicev1b\x06proto3"
 
 var (
 	file_service_v1_service_proto_rawDescOnce sync.Once

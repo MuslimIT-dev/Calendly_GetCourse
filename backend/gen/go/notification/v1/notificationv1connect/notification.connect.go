@@ -8,7 +8,7 @@ import (
 	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	v1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/api/proto/notification/v1"
+	v1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/notification/v1"
 	http "net/http"
 	strings "strings"
 )
