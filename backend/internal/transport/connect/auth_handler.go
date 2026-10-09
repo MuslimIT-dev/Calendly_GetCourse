@@ -16,15 +16,18 @@ import (
 type AuthHandler struct {
 	registerUC *authuc.RegisterUseCase
 	loginUC    *authuc.LoginUseCase
+	refreshUC  *authuc.RefreshUseCase
 }
 
 func NewAuthHandler(
 	registerUC *authuc.RegisterUseCase,
 	loginUC *authuc.LoginUseCase,
+	refreshUC *authuc.RefreshUseCase,
 ) *AuthHandler {
 	return &AuthHandler{
 		registerUC: registerUC,
 		loginUC:    loginUC,
+		refreshUC:  refreshUC,
 	}
 }
 
@@ -101,7 +104,26 @@ func (h *AuthHandler) RefreshToken(
 	ctx context.Context,
 	req *connect.Request[authv1.RefreshTokenRequest],
 ) (*connect.Response[authv1.RefreshTokenResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, nil)
+	ip := req.Peer().Addr
+	ua := req.Header().Get("User-Agent")
+
+	out, err := h.refreshUC.Execute(ctx, authuc.RefreshInput{
+		RefreshToken: req.Msg.RefreshToken,
+		IPAddress:    ip,
+		UserAgent:    ua,
+	})
+	if err != nil {
+		return nil, mapDomainError(err)
+	}
+
+	resp := &authv1.RefreshTokenResponse{
+		Tokens: &authv1.TokenPair{
+			AccessToken:  out.AccessToken,
+			RefreshToken: out.RefreshToken,
+			ExpiresIn:    out.ExpiresIn,
+		},
+	}
+	return connect.NewResponse(resp), nil
 }
 
 func (h *AuthHandler) VerifyEmail(

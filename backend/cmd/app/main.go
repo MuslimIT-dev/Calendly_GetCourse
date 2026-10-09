@@ -103,9 +103,16 @@ func main() {
 		SessionTTL:   30 * 24 * time.Hour,
 	})
 
+	refreshUC := authuc.NewRefreshUseCase(authuc.Deps{
+		Users:        userRepo,
+		Sessions:     sessionCache,
+		Tokens:       tokenService,
+		SessionTTL:   30 * 24 * time.Hour,
+	})
+
 	// INITIALIZE HANDLERS AND SERVER
 
-	authHandler := connecttransport.NewAuthHandler(registerUC, loginUC)
+	authHandler := connecttransport.NewAuthHandler(registerUC, loginUC, refreshUC)
 
 	mux := http.NewServeMux()
 	mux.Handle("/healthz", healthHandler())

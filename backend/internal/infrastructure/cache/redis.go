@@ -41,3 +41,21 @@ func (r *RedisCache[T]) Set(ctx context.Context, key string, value *T, ttl time.
 
 	return r.client.Set(ctx, key, data, ttl).Err()
 }
+
+func (r *RedisCache[T]) Delete(ctx context.Context, key string) error {
+	return r.client.Del(ctx, key).Err()
+}
+
+func (r *RedisCache[T]) DeleteByPattern(ctx context.Context, pattern string) error {
+	iter := r.client.Scan(ctx, 0, pattern, 0).Iterator()
+	for iter.Next(ctx) {
+		if err := r.client.Del(ctx, iter.Val()).Err(); err != nil {
+			return err
+		}
+	}
+	if err := iter.Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
