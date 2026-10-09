@@ -8,7 +8,7 @@ DROP INDEX IF EXISTS idx_masters_catalog_rating;
 DROP INDEX IF EXISTS idx_masters_catalog_experience;
 DROP INDEX IF EXISTS idx_masters_specialization_rating;
 DROP INDEX IF EXISTS idx_masters_experience;
-DROP INDEX IF EXISTS idx_masters_timezone;
+DROP INDEX IF EXISTS idx_users_timezone;
 DROP INDEX IF EXISTS idx_locations_master_active;
 
 DROP INDEX IF EXISTS idx_languages_language_master;

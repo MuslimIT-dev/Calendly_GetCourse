@@ -71,9 +71,8 @@ CREATE INDEX idx_masters_experience
 ON masters(years_of_experience)
 WHERE is_accepting_bookings = TRUE;
 
-CREATE INDEX idx_masters_timezone
-ON masters(timezone)
-WHERE is_accepting_bookings = TRUE;
+CREATE INDEX idx_users_timezone
+ON users(timezone);
 
 CREATE INDEX idx_locations_master_active
 ON locations(master_id)
