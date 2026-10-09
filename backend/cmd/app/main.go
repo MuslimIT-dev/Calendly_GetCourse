@@ -35,6 +35,7 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("no .env file found, relying on environment variables")
 	}
+
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
@@ -69,6 +70,8 @@ func main() {
 	}
 	defer kafkaWriter.Close()
 
+	// INITIALIZE REPOSITORIES, CACHES, AND SERVICES
+
 	queries := postgresdb.New(pool)
 
 	userRepo := postgres.NewUserRepo(queries)
@@ -78,6 +81,8 @@ func main() {
 
 	passwordHasher := hasher.NewBcryptHasher()
 	tokenService := jwt.NewJWTService(jwtSecret, "calendly-clone")
+
+	// INITIALIZE USE CASES
 
 	registerUC := authuc.NewRegisterUseCase(authuc.Deps{
 		Users:          userRepo,
@@ -90,7 +95,17 @@ func main() {
 		VerifyTokenTTL: 24 * time.Hour,
 	})
 
-	authHandler := connecttransport.NewAuthHandler(registerUC)
+	loginUC := authuc.NewLoginUseCase(authuc.Deps{
+		Users:        userRepo,
+		Sessions:     sessionCache,
+		Hasher:       passwordHasher,
+		Tokens:       tokenService,
+		SessionTTL:   30 * 24 * time.Hour,
+	})
+
+	// INITIALIZE HANDLERS AND SERVER
+
+	authHandler := connecttransport.NewAuthHandler(registerUC, loginUC)
 
 	mux := http.NewServeMux()
 	mux.Handle("/healthz", healthHandler())

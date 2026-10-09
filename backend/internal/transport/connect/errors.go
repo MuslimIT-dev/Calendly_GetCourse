@@ -16,6 +16,8 @@ func mapDomainError(err error) error {
 		return connect.NewError(connect.CodeNotFound, err)
 	case errors.Is(err, domain.ErrInvalidToken):
 		return connect.NewError(connect.CodeUnauthenticated, err)
+	case errors.Is(err, domain.ErrInvalidCredentials):
+		return connect.NewError(connect.CodeUnauthenticated, err)
 	default:
 		return connect.NewError(connect.CodeInternal, err)
 	}

@@ -15,10 +15,17 @@ import (
 
 type AuthHandler struct {
 	registerUC *authuc.RegisterUseCase
+	loginUC    *authuc.LoginUseCase
 }
 
-func NewAuthHandler(registerUC *authuc.RegisterUseCase) *AuthHandler {
-	return &AuthHandler{registerUC: registerUC}
+func NewAuthHandler(
+	registerUC *authuc.RegisterUseCase,
+	loginUC *authuc.LoginUseCase,
+) *AuthHandler {
+	return &AuthHandler{
+		registerUC: registerUC,
+		loginUC:    loginUC,
+	}
 }
 
 var _ authv1connect.AuthServiceHandler = (*AuthHandler)(nil)
@@ -58,7 +65,36 @@ func (h *AuthHandler) Login(
 	ctx context.Context,
 	req *connect.Request[authv1.LoginRequest],
 ) (*connect.Response[authv1.LoginResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, nil)
+	ip := req.Peer().Addr
+	ua := req.Header().Get("User-Agent")
+
+	out, err := h.loginUC.Execute(ctx, authuc.LoginInput{
+		Email:     req.Msg.Email,
+		Password:  req.Msg.Password,
+		IPAddress: ip,
+		UserAgent: ua,
+	})
+	if err != nil {
+		return nil, mapDomainError(err)
+	}
+
+	resp := &authv1.LoginResponse{
+		User: &userv1.User{
+			Id:            strconv.Itoa(int(out.User.ID)),
+			Name:          out.User.Name,
+			Email:         out.User.Email,
+			EmailVerified: out.User.EmailVerified,
+			AvatarUrl:     out.User.AvatarURL,
+			Timezone:      out.User.Timezone,
+		},
+		Tokens: &authv1.TokenPair{
+			AccessToken:  out.AccessToken,
+			RefreshToken: out.RefreshToken,
+			ExpiresIn:    out.ExpiresIn,
+		},
+	}
+
+	return connect.NewResponse(resp), nil
 }
 
 func (h *AuthHandler) RefreshToken(

@@ -9,4 +9,5 @@ var (
     ErrDatabaseConnectionFailed  = errors.New("database connection failed")
     ErrDatabaseOperationFailed   = errors.New("database operation failed")
     ErrRepositoryOperationFailed = errors.New("repository operation failed")
+    ErrInvalidCredentials        = errors.New("invalid credentials")
 )
