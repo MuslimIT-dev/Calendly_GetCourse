@@ -66,7 +66,7 @@ func (uc *ListMastersUseCase) Execute(ctx context.Context, in ListMastersInput) 
 }
 
 func buildCursor(f domain.MasterFilter, c *domain.MasterCardData) *domain.ListCursor {
-	cursor := &domain.ListCursor{ID: c.Profile.UserID}
+	cursor := &domain.ListCursor{ID: c.Profile.ID}
 	switch f.SortBy {
 	case domain.SortTypeRating:
 		v := float64(c.Profile.AvgRating)

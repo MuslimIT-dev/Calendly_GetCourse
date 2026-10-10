@@ -2,14 +2,17 @@ package postgres
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"math/big"
+	"strconv"
 	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/postgres/db"
+	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/db"
 )
 
 type MasterRepo struct {
@@ -41,7 +44,7 @@ func (r *MasterRepo) GetByUserID(ctx context.Context, userID int32) (*domain.Mas
 		}
 		return nil, err
 	}
-	return mapMasterFull(row), nil
+	return mapMasterFullByUserID(row), nil
 }
 
 func (r *MasterRepo) Create(ctx context.Context, p *domain.MasterProfile) (*domain.MasterProfile, error) {
@@ -51,7 +54,7 @@ func (r *MasterRepo) Create(ctx context.Context, p *domain.MasterProfile) (*doma
 		Bio:                 pgtype.Text{String: p.Bio, Valid: p.Bio != ""},
 		Specialization:      p.Specialization,
 		YearsOfExperience:   p.YearsOfExperience,
-		IsAcceptingBookings: p.IsAcceptingBookings,
+		IsAcceptingBookings: pgtype.Bool{Bool: p.IsAcceptingBookings, Valid: true},
 	})
 	if err != nil {
 		return nil, err
@@ -61,10 +64,10 @@ func (r *MasterRepo) Create(ctx context.Context, p *domain.MasterProfile) (*doma
 
 func (r *MasterRepo) Update(ctx context.Context, p *domain.MasterProfile) (*domain.MasterProfile, error) {
 	row, err := r.q.UpdateMaster(ctx, db.UpdateMasterParams{
-		ID: p.ID,
-		Bio: pgtype.Text{String: p.Bio, Valid: true},
-		Specialization: pgtype.Text{String: p.Specialization, Valid: true},
-		YearsOfExperience: pgtype.Int4{Int32: p.YearsOfExperience, Valid: true},
+		ID:                  p.ID,
+		Bio:                 pgtype.Text{String: p.Bio, Valid: true},
+		Specialization:      pgtype.Text{String: p.Specialization, Valid: true},
+		YearsOfExperience:   pgtype.Int4{Int32: p.YearsOfExperience, Valid: true},
 		IsAcceptingBookings: pgtype.Bool{Bool: p.IsAcceptingBookings, Valid: true},
 	})
 	if err != nil {
@@ -79,11 +82,7 @@ func (r *MasterRepo) UpdateSlug(ctx context.Context, id int32, slug string) erro
 }
 
 func (r *MasterRepo) SlugExists(ctx context.Context, slug string, excludeID int32) (bool, error) {
-	var excl pgtype.Int4
-	if excludeID > 0 {
-		excl = pgtype.Int4{Int32: excludeID, Valid: true}
-	}
-	return r.q.MasterSlugExists(ctx, db.MasterSlugExistsParams{Slug: slug, ExcludeID: excl})
+	return r.q.MasterSlugExists(ctx, slug)
 }
 
 func (r *MasterRepo) ReplaceLanguages(ctx context.Context, masterID int32, languages []domain.Language) error {
@@ -102,7 +101,10 @@ func (r *MasterRepo) ReplaceLanguages(ctx context.Context, masterID int32, langu
 	for i, l := range languages {
 		dtos[i] = langDTO{Language: l.Name, Proficiency: proficiencyToString(l.Proficiency)}
 	}
-	data, _ := json.Marshal(dtos)
+	data, err := json.Marshal(dtos)
+	if err != nil {
+		return err
+	}
 
 	return r.q.InsertMasterLanguages(ctx, db.InsertMasterLanguagesParams{
 		MasterID: masterID,
@@ -128,7 +130,10 @@ func (r *MasterRepo) ReplaceCertificates(ctx context.Context, masterID int32, ce
 	for i, c := range certs {
 		dtos[i] = certDTO{Name: c.Name, Organization: c.Organization, Year: c.Year, FileUrl: c.FileURL}
 	}
-	data, _ := json.Marshal(dtos)
+	data, err := json.Marshal(dtos)
+	if err != nil {
+		return err
+	}
 
 	return r.q.InsertMasterCertificates(ctx, db.InsertMasterCertificatesParams{
 		MasterID: masterID,
@@ -159,7 +164,11 @@ func (r *MasterRepo) ListCards(ctx context.Context, f domain.MasterFilter, c *do
 		}
 		return out, nil
 	default:
-		rows, err := r.q.ListMastersByRating(ctx, buildRatingParams(f, c, limit))
+		params, err := buildRatingParams(f, c, limit)
+		if err != nil {
+			return nil, err
+		}
+		rows, err := r.q.ListMastersByRating(ctx, params)
 		if err != nil {
 			return nil, err
 		}
@@ -169,6 +178,78 @@ func (r *MasterRepo) ListCards(ctx context.Context, f domain.MasterFilter, c *do
 		}
 		return out, nil
 	}
+}
+
+func buildExperienceParams(f domain.MasterFilter, c *domain.ListCursor, limit int32) db.ListMastersByExperienceParams {
+	params := db.ListMastersByExperienceParams{
+		MinPrice:       int4Value(f.MinPrice),
+		MaxPrice:       int4Value(f.MaxPrice),
+		MinExperience:  int4Value(f.MinExperience),
+		Specialization: textValue(f.Specialization),
+		MasterTimezone: textValue(f.MasterTimezone),
+		ServiceID:      int4Value(f.ServiceID),
+		PageSize:       limit,
+	}
+	if c != nil && c.IntValue != nil {
+		params.CursorExperience = pgtype.Int4{Int32: *c.IntValue, Valid: true}
+		params.CursorID = pgtype.Int4{Int32: c.ID, Valid: true}
+	}
+	return params
+}
+
+func buildPriceParams(f domain.MasterFilter, c *domain.ListCursor, limit int32) db.ListMastersByPriceParams {
+	params := db.ListMastersByPriceParams{
+		MinPrice:       int4Value(f.MinPrice),
+		MaxPrice:       int4Value(f.MaxPrice),
+		MinExperience:  int4Value(f.MinExperience),
+		Specialization: textValue(f.Specialization),
+		MasterTimezone: textValue(f.MasterTimezone),
+		ServiceID:      int4Value(f.ServiceID),
+		PageSize:       limit,
+	}
+	if c != nil && c.IntValue != nil {
+		params.CursorPrice = pgtype.Int4{Int32: *c.IntValue, Valid: true}
+		params.CursorID = pgtype.Int4{Int32: c.ID, Valid: true}
+	}
+	return params
+}
+
+func buildRatingParams(f domain.MasterFilter, c *domain.ListCursor, limit int32) (db.ListMastersByRatingParams, error) {
+	params := db.ListMastersByRatingParams{
+		MinPrice:       int4Value(f.MinPrice),
+		MaxPrice:       int4Value(f.MaxPrice),
+		MinExperience:  int4Value(f.MinExperience),
+		Specialization: textValue(f.Specialization),
+		MasterTimezone: textValue(f.MasterTimezone),
+		ServiceID:      int4Value(f.ServiceID),
+		PageSize:       limit,
+	}
+	if c != nil && c.TimeValue != nil {
+		rating := pgtype.Numeric{}
+		if err := rating.ScanScientific(strconv.FormatFloat(*c.TimeValue, 'f', -1, 64)); err != nil {
+			return params, err
+		}
+		params.CursorRating = rating
+		params.CursorID = pgtype.Numeric{
+			Int:   big.NewInt(int64(c.ID)),
+			Valid: true,
+		}
+	}
+	return params, nil
+}
+
+func int4Value(value *int32) pgtype.Int4 {
+	if value == nil {
+		return pgtype.Int4{}
+	}
+	return pgtype.Int4{Int32: *value, Valid: true}
+}
+
+func textValue(value string) pgtype.Text {
+	if value == "" {
+		return pgtype.Text{}
+	}
+	return pgtype.Text{String: value, Valid: true}
 }
 
 func proficiencyToString(p domain.ProficiencyLevel) string {
@@ -196,19 +277,127 @@ func proficiencyFromString(s string) domain.ProficiencyLevel {
 }
 
 func mapMasterBasic(row db.Master) *domain.MasterProfile {
+	return mapMasterProfileFields(
+		row.ID, row.UserID, row.Slug, row.Bio, row.Specialization,
+		row.YearsOfExperience, row.IsAcceptingBookings, row.DefaultLocationID,
+		row.AvgRating, row.ReviewsCount, row.CreatedAt, row.UpdatedAt,
+	)
+}
+
+func mapMasterFull(row db.GetMasterBySlugRow) *domain.MasterProfile {
+	return mapMasterProfileFields(
+		row.ID, row.UserID, row.Slug, row.Bio, row.Specialization,
+		row.YearsOfExperience, row.IsAcceptingBookings, row.DefaultLocationID,
+		row.AvgRating, row.ReviewsCount, row.CreatedAt, row.UpdatedAt,
+	)
+}
+
+func mapMasterFullByUserID(row db.GetMasterByUserIDRow) *domain.MasterProfile {
+	return mapMasterProfileFields(
+		row.ID, row.UserID, row.Slug, row.Bio, row.Specialization,
+		row.YearsOfExperience, row.IsAcceptingBookings, row.DefaultLocationID,
+		row.AvgRating, row.ReviewsCount, row.CreatedAt, row.UpdatedAt,
+	)
+}
+
+func mapMasterProfileFields(
+	id, userID int32,
+	slug string,
+	bio pgtype.Text,
+	specialization string,
+	yearsOfExperience int32,
+	isAcceptingBookings pgtype.Bool,
+	defaultLocationID pgtype.Int4,
+	avgRating pgtype.Numeric,
+	reviewsCount pgtype.Int4,
+	createdAt, updatedAt pgtype.Timestamptz,
+) *domain.MasterProfile {
 	return &domain.MasterProfile{
-		ID:                  row.ID,
-		UserID:              row.UserID,
-		Slug:                row.Slug,
-		Bio:                 row.Bio.String,
-		Specialization:      row.Specialization,
-		YearsOfExperience:   row.YearsOfExperience,
-		IsAcceptingBookings: row.IsAcceptingBookings.Bool,
-		DefaultLocationID:   int4Ptr(row.DefaultLocationID),
-		AvgRating:           numericToFloat32(row.AvgRating),
-		ReviewsCount:        row.ReviewsCount.Int32,
-		CreatedAt:           row.CreatedAt.Time,
-		UpdatedAt:           row.UpdatedAt.Time,
+		ID:                  id,
+		UserID:              userID,
+		Slug:                slug,
+		Bio:                 bio.String,
+		Specialization:      specialization,
+		YearsOfExperience:   yearsOfExperience,
+		IsAcceptingBookings: isAcceptingBookings.Bool,
+		DefaultLocationID:   int4Ptr(defaultLocationID),
+		AvgRating:           numericToFloat32(avgRating),
+		ReviewsCount:        reviewsCount.Int32,
+		CreatedAt:           createdAt.Time,
+		UpdatedAt:           updatedAt.Time,
+	}
+}
+
+func mapMasterUserFull(row db.GetMasterBySlugRow) *domain.User {
+	return mapMasterUserFields(row.UserID, row.UserName, row.UserEmail, row.UserAvatarUrl, row.UserTimezone, row.UserEmailVerified, row.UserRoleIds)
+}
+
+func mapMasterUserFullByUserID(row db.GetMasterByUserIDRow) *domain.User {
+	return mapMasterUserFields(row.UserID, row.UserName, row.UserEmail, row.UserAvatarUrl, row.UserTimezone, row.UserEmailVerified, row.UserRoleIds)
+}
+
+func mapMasterUserFields(id int32, name pgtype.Text, email string, avatarURL, timezone pgtype.Text, emailVerified pgtype.Bool, roleIDs []int32) *domain.User {
+	return &domain.User{
+		ID:            id,
+		Name:          name.String,
+		Email:         email,
+		AvatarURL:     avatarURL.String,
+		Timezone:      timezone.String,
+		EmailVerified: emailVerified.Bool,
+		Roles:         convertRoleIDsToRoles(roleIDs),
+	}
+}
+
+func mapCardFromExperience(row db.ListMastersByExperienceRow) *domain.MasterCardData {
+	return mapMasterCard(row.ID, row.UserID, row.Slug, row.Bio, row.Specialization, row.YearsOfExperience,
+		row.IsAcceptingBookings, row.DefaultLocationID, row.AvgRating, row.ReviewsCount,
+		row.CreatedAt, row.UpdatedAt, row.UserName, row.UserEmail, row.UserAvatarUrl,
+		row.UserTimezone, row.UserEmailVerified, row.UserRoleIds, row.MinPrice, row.TotalServices)
+}
+
+func mapCardFromPrice(row db.ListMastersByPriceRow) *domain.MasterCardData {
+	return mapMasterCard(row.ID, row.UserID, row.Slug, row.Bio, row.Specialization, row.YearsOfExperience,
+		row.IsAcceptingBookings, row.DefaultLocationID, row.AvgRating, row.ReviewsCount,
+		row.CreatedAt, row.UpdatedAt, row.UserName, row.UserEmail, row.UserAvatarUrl,
+		row.UserTimezone, row.UserEmailVerified, row.UserRoleIds, row.MinPrice, row.TotalServices)
+}
+
+func mapCardFromRating(row db.ListMastersByRatingRow) *domain.MasterCardData {
+	return mapMasterCard(row.ID, row.UserID, row.Slug, row.Bio, row.Specialization, row.YearsOfExperience,
+		row.IsAcceptingBookings, row.DefaultLocationID, row.AvgRating, row.ReviewsCount,
+		row.CreatedAt, row.UpdatedAt, row.UserName, row.UserEmail, row.UserAvatarUrl,
+		row.UserTimezone, row.UserEmailVerified, row.UserRoleIds, row.MinPrice, row.TotalServices)
+}
+
+func mapMasterCard(
+	id, userID int32,
+	slug string,
+	bio pgtype.Text,
+	specialization string,
+	yearsOfExperience int32,
+	isAcceptingBookings pgtype.Bool,
+	defaultLocationID pgtype.Int4,
+	avgRating pgtype.Numeric,
+	reviewsCount pgtype.Int4,
+	createdAt, updatedAt pgtype.Timestamptz,
+	userName pgtype.Text,
+	userEmail string,
+	userAvatarURL, userTimezone pgtype.Text,
+	userEmailVerified pgtype.Bool,
+	userRoleIDs []int32,
+	minPrice pgtype.Int4,
+	totalServices int64,
+) *domain.MasterCardData {
+	profile := mapMasterProfileFields(
+		id, userID, slug, bio, specialization, yearsOfExperience,
+		isAcceptingBookings, defaultLocationID, avgRating, reviewsCount, createdAt, updatedAt,
+	)
+	user := mapMasterUserFields(userID, userName, userEmail, userAvatarURL, userTimezone, userEmailVerified, userRoleIDs)
+	return &domain.MasterCardData{
+		Profile:       profile,
+		User:          user,
+		MinPrice:      minPrice.Int32,
+		TotalServices: int32(totalServices),
 	}
 }
 

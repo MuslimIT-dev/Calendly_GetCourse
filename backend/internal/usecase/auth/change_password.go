@@ -56,7 +56,7 @@ func (uc *ChangePasswordUseCase) Execute(ctx context.Context, in ChangePasswordI
 		return nil, fmt.Errorf("update password: %w", err)
 	}
 
-	_ = uc.deps.Sessions.DeleteByPattern(ctx, fmt.Sprintf("session:%d:*", user.ID))
+	_, _ = uc.deps.Sessions.DeleteByPattern(ctx, fmt.Sprintf("session:%d:*", user.ID))
 
 	return &ChangePasswordOutput{}, nil
 }

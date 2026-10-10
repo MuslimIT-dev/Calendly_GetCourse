@@ -1,5 +1,14 @@
 package auth
 
+import (
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
+
+	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
+)
+
 func generateToken(nBytes int) string {
 	b := make([]byte, nBytes)
 	_, _ = rand.Read(b)

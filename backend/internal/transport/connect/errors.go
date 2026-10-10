@@ -2,11 +2,21 @@ package connect
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
 
 	"connectrpc.com/connect"
 
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
 )
+
+func parseID(value string) (int32, error) {
+	id, err := strconv.ParseInt(value, 10, 32)
+	if err != nil || id <= 0 {
+		return 0, fmt.Errorf("invalid ID %q", value)
+	}
+	return int32(id), nil
+}
 
 func mapDomainError(err error) error {
 	switch {

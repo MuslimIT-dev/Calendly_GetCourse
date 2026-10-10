@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/appcontext"
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
@@ -13,7 +14,7 @@ type SessionInfo struct {
 	ID        string
 	IPAddress string
 	UserAgent string
-	CreatedAt string
+	CreatedAt time.Time
 	IsCurrent bool
 }
 
@@ -57,7 +58,7 @@ func (uc *ListSessionsUseCase) Execute(ctx context.Context, in ListSessionsInput
 			ID:        id,
 			IPAddress: val.IPAddress,
 			UserAgent: val.UserAgent,
-			CreatedAt: val.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+			CreatedAt: val.CreatedAt,
 			IsCurrent: id == currentHash,
 		})
 	}

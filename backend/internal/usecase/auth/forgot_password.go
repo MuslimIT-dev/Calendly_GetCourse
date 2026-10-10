@@ -3,8 +3,6 @@ package auth
 import (
 	"context"
 	"time"
-
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
 )
 
 type ForgotPasswordInput struct {
@@ -19,10 +17,10 @@ type PasswordResetValue struct {
 }
 
 type PasswordResetRequestedEvent struct {
-	UserID       int32  `json:"user_id"`
-	Email        string `json:"email"`
-	Name         string `json:"name"`
-	ResetToken   string `json:"reset_token"`
+	UserID     int32  `json:"user_id"`
+	Email      string `json:"email"`
+	Name       string `json:"name"`
+	ResetToken string `json:"reset_token"`
 }
 
 type ForgotPasswordUseCase struct {

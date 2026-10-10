@@ -90,7 +90,7 @@ func (h *LocationHandler) CreateLocation(
 ) (*connect.Response[locationv1.CreateLocationResponse], error) {
 	out, err := h.createUC.Execute(ctx, locationuc.CreateLocationInput{
 		Name:       req.Msg.Name,
-		Address:    postalToString(req.Msg.Address),
+		Address:    req.Msg.Address,
 		Timezone:   req.Msg.Timezone,
 		IsOnline:   req.Msg.IsOnline,
 		MeetingURL: req.Msg.MeetingUrl,
@@ -117,9 +117,8 @@ func (h *LocationHandler) UpdateLocation(
 	if req.Msg.Name != "" {
 		in.Name = &req.Msg.Name
 	}
-	if req.Msg.Address != nil {
-		addr := postalToString(req.Msg.Address)
-		in.Address = &addr
+	if req.Msg.Address != "" {
+		in.Address = &req.Msg.Address
 	}
 	if req.Msg.Timezone != "" {
 		in.Timezone = &req.Msg.Timezone
@@ -160,7 +159,7 @@ func toProtoLocation(l *domain.Location) *locationv1.Location {
 		Id:         strconv.Itoa(int(l.ID)),
 		MasterId:   strconv.Itoa(int(l.MasterID)),
 		Name:       l.Name,
-		Address:    stringToPostal(l.Address),
+		Address:    l.Address,
 		Timezone:   l.Timezone,
 		IsOnline:   l.IsOnline,
 		MeetingUrl: l.MeetingURL,
@@ -168,39 +167,4 @@ func toProtoLocation(l *domain.Location) *locationv1.Location {
 		CreatedAt:  timestamppb.New(l.CreatedAt),
 		UpdatedAt:  timestamppb.New(l.UpdatedAt),
 	}
-}
-
-func stringToPostal(s string) *postaladdress.PostalAddress {
-	if s == "" {
-		return nil
-	}
-	return &postaladdress.PostalAddress{
-		AddressLines: []string{s},
-	}
-}
-
-func postalToString(p *postaladdress.PostalAddress) string {
-	if p == nil {
-		return ""
-	}
-	parts := []string{}
-	if p.Locality != "" {
-		parts = append(parts, p.Locality)
-	}
-	parts = append(parts, p.AddressLines...)
-	return joinNonEmpty(parts, ", ")
-}
-
-func joinNonEmpty(parts []string, sep string) string {
-	out := ""
-	for i, p := range parts {
-		if p == "" {
-			continue
-		}
-		if i > 0 && out != "" {
-			out += sep
-		}
-		out += p
-	}
-	return out
 }

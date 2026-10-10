@@ -1,10 +1,13 @@
 package auth
 
 import (
+	"context"
 	"time"
 
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
 )
+
+type SessionValue = domain.SessionValue
 
 type PasswordHasher interface {
 	Hash(password string) (string, error)
@@ -41,6 +44,8 @@ type Deps struct {
 	Hasher           PasswordHasher
 	Tokens           TokenService
 	Events           domain.Publisher[UserRegisteredEvent]
+	ResetEvents      domain.Publisher[PasswordResetRequestedEvent]
+	PasswordEvents   domain.Publisher[PasswordChangedEvent]
 	SessionTTL       time.Duration
 	VerifyTokenTTL   time.Duration
 	PasswordResetTTL time.Duration

@@ -8,7 +8,7 @@ import (
 
 type Deps struct {
 	Users    domain.UserRepository
-	Cache	 domain.Cache[domain.CacheUser]
+	Cache    domain.Cache[domain.CachedUser]
 	CacheTTL time.Duration
 }
 

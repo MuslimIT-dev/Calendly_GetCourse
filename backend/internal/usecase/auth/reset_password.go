@@ -55,7 +55,7 @@ func (uc *ResetPasswordUseCase) Execute(ctx context.Context, in ResetPasswordInp
 
 	_, _ = uc.deps.Sessions.DeleteByPattern(ctx, fmt.Sprintf("session:*:user:%d", value.UserID))
 
-	_ = uc.deps.ResetEvents.Publish(ctx, "user.password_changed", &PasswordChangedEvent{
+	_ = uc.deps.PasswordEvents.Publish(ctx, "user.password_changed", &PasswordChangedEvent{
 		UserID: value.UserID,
 	})
 

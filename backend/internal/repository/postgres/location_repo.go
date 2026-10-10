@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/postgres/db"
+	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/db"
 )
 
 type LocationRepo struct {
@@ -57,7 +57,7 @@ func (r *LocationRepo) Create(ctx context.Context, l *domain.Location) (*domain.
 		Name:       l.Name,
 		Address:    l.Address,
 		Timezone:   l.Timezone,
-		IsOnline:   l.IsOnline,
+		IsOnline:   pgtype.Bool{Bool: l.IsOnline, Valid: true},
 		MeetingUrl: pgtype.Text{String: l.MeetingURL, Valid: l.MeetingURL != ""},
 	})
 	if err != nil {

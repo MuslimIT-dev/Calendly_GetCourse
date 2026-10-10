@@ -10,33 +10,37 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
-	"github.com/joho/godotenv"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
 	goredis "github.com/redis/go-redis/v9"
 	kafkago "github.com/segmentio/kafka-go"
 
 	migrationfiles "github.com/MuslimIT-dev/Calendly_GetCourse/backend/db/migrations"
-	postgresdb "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/db"
+	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/infrastructure/broker"
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/infrastructure/cache"
+	postgresdb "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/db"
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/postgres"
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/transport/connect/middleware"
 
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/pkg/hasher"
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/pkg/jwt"
+	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/pkg/password"
 
 	authv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/auth/v1/authv1connect"
-	userv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1/userv1connect"
+	locationv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/location/v1/locationv1connect"
 	masterv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/master/v1/masterv1connect"
-	
+	userv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1/userv1connect"
+
 	connecttransport "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/transport/connect"
-	
+
 	authuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/auth"
-	useruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/user"
+	locationuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/location"
 	masteruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/master"
+	useruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/user"
 )
 
 func main() {
@@ -90,13 +94,14 @@ func main() {
 	sessionCache := cache.NewRedisCache[authuc.SessionValue](rdb)
 	verifyTokenCache := cache.NewRedisCache[authuc.VerifyEmailValue](rdb)
 	passwordResetCache := cache.NewRedisCache[authuc.PasswordResetValue](rdb)
-	userCache := cache.NewRedisCache[useruc.CachedUser](rdb)
+	userCache := cache.NewRedisCache[domain.CachedUser](rdb)
 	masterCache := cache.NewRedisCache[domain.CachedMaster](rdb)
 	locationCache := cache.NewRedisCache[domain.CachedLocations](rdb)
 
 	// INITIALIZE KAFKA PUBLISHER
 	publisher := broker.NewKafkaPublisher[authuc.UserRegisteredEvent](kafkaWriter)
 	resetEvents := broker.NewKafkaPublisher[authuc.PasswordResetRequestedEvent](kafkaWriter)
+	passwordEvents := broker.NewKafkaPublisher[authuc.PasswordChangedEvent](kafkaWriter)
 
 	// INITIALIZE SERVICES
 	passwordHasher := hasher.NewBcryptHasher()
@@ -120,18 +125,18 @@ func main() {
 	})
 
 	loginUC := authuc.NewLoginUseCase(authuc.Deps{
-		Users:        userRepo,
-		Sessions:     sessionCache,
-		Hasher:       passwordHasher,
-		Tokens:       tokenService,
-		SessionTTL:   30 * 24 * time.Hour,
+		Users:      userRepo,
+		Sessions:   sessionCache,
+		Hasher:     passwordHasher,
+		Tokens:     tokenService,
+		SessionTTL: 30 * 24 * time.Hour,
 	})
 
 	refreshUC := authuc.NewRefreshUseCase(authuc.Deps{
-		Users:        userRepo,
-		Sessions:     sessionCache,
-		Tokens:       tokenService,
-		SessionTTL:   30 * 24 * time.Hour,
+		Users:      userRepo,
+		Sessions:   sessionCache,
+		Tokens:     tokenService,
+		SessionTTL: 30 * 24 * time.Hour,
 	})
 
 	logoutUC := authuc.NewLogoutUseCase(authuc.Deps{
@@ -162,13 +167,14 @@ func main() {
 		PasswordResets: passwordResetCache,
 		Hasher:         passwordHasher,
 		ResetEvents:    resetEvents,
+		PasswordEvents: passwordEvents,
 	})
 
 	changePasswordUC := authuc.NewChangePasswordUseCase(authuc.Deps{
-		Users:  userRepo,
+		Users:    userRepo,
 		Sessions: sessionCache,
-		Hasher: passwordHasher,
-		Breach: breachChecker,
+		Hasher:   passwordHasher,
+		Breach:   breachChecker,
 	})
 
 	listSessionsUC := authuc.NewListSessionsUseCase(authuc.Deps{
@@ -178,20 +184,20 @@ func main() {
 	// user
 
 	getUserUC := useruc.NewGetUserUseCase(useruc.Deps{
-		Users: userRepo,
-		Cache: userCache,
+		Users:    userRepo,
+		Cache:    userCache,
 		CacheTTL: 10 * time.Minute,
 	})
 
 	getMeUC := useruc.NewGetMeUseCase(useruc.Deps{
-		Users: userRepo,
-		Cache: userCache,
+		Users:    userRepo,
+		Cache:    userCache,
 		CacheTTL: 10 * time.Minute,
 	})
 
 	updateUserUC := useruc.NewUpdateUserUseCase(useruc.Deps{
-		Users: userRepo,
-		Cache: userCache,
+		Users:    userRepo,
+		Cache:    userCache,
 		CacheTTL: 10 * time.Minute,
 	})
 
@@ -220,7 +226,6 @@ func main() {
 	createLocationUC := locationuc.NewCreateLocationUseCase(locationDeps)
 	updateLocationUC := locationuc.NewUpdateLocationUseCase(locationDeps)
 	deleteLocationUC := locationuc.NewDeleteLocationUseCase(locationDeps)
-
 
 	// INITIALIZE HANDLERS
 

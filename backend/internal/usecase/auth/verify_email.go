@@ -2,8 +2,6 @@ package auth
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"

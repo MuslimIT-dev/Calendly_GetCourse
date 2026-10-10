@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"connectrpc.com/connect"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	authv1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/auth/v1"
 	authv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/auth/v1/authv1connect"
@@ -14,16 +15,16 @@ import (
 )
 
 type AuthHandler struct {
-	registerUC *authuc.RegisterUseCase
-	loginUC    *authuc.LoginUseCase
-	refreshUC  	  *authuc.RefreshUseCase
-	verifyEmailUC *authuc.VerifyEmailUseCase
+	registerUC       *authuc.RegisterUseCase
+	loginUC          *authuc.LoginUseCase
+	refreshUC        *authuc.RefreshUseCase
+	verifyEmailUC    *authuc.VerifyEmailUseCase
 	forgotPasswordUC *authuc.ForgotPasswordUseCase
-	resetPasswordUC *authuc.ResetPasswordUseCase
-	logoutUC *authuc.LogoutUseCase
-	logoutAllUC *authuc.LogoutAllUseCase
+	resetPasswordUC  *authuc.ResetPasswordUseCase
+	logoutUC         *authuc.LogoutUseCase
+	logoutAllUC      *authuc.LogoutAllUseCase
 	changePasswordUC *authuc.ChangePasswordUseCase
-	listSessionsUC *authuc.ListSessionsUseCase
+	listSessionsUC   *authuc.ListSessionsUseCase
 }
 
 func NewAuthHandler(
@@ -39,16 +40,16 @@ func NewAuthHandler(
 	listSessionsUC *authuc.ListSessionsUseCase,
 ) *AuthHandler {
 	return &AuthHandler{
-		registerUC: registerUC,
-		loginUC:    loginUC,
-		refreshUC:  refreshUC,
-		verifyEmailUC: verifyEmailUC,
+		registerUC:       registerUC,
+		loginUC:          loginUC,
+		refreshUC:        refreshUC,
+		verifyEmailUC:    verifyEmailUC,
 		forgotPasswordUC: forgotPasswordUC,
-		resetPasswordUC: resetPasswordUC,
-		logoutUC: logoutUC,
-		logoutAllUC: logoutAllUC,
+		resetPasswordUC:  resetPasswordUC,
+		logoutUC:         logoutUC,
+		logoutAllUC:      logoutAllUC,
 		changePasswordUC: changePasswordUC,
-		listSessionsUC: listSessionsUC,
+		listSessionsUC:   listSessionsUC,
 	}
 }
 
@@ -249,7 +250,7 @@ func (h *AuthHandler) ListSessions(
 			Id:        s.ID,
 			IpAddress: s.IPAddress,
 			UserAgent: s.UserAgent,
-			CreatedAt: timestamppb.New(mustParseTime(s.CreatedAt)),
+			CreatedAt: timestamppb.New(s.CreatedAt),
 			IsCurrent: s.IsCurrent,
 		}
 	}
