@@ -110,9 +110,19 @@ func main() {
 		SessionTTL:   30 * 24 * time.Hour,
 	})
 
+	verifyEmailUC := authuc.NewVerifyEmailUseCase(authuc.Deps{
+		Users:        userRepo,
+		VerifyTokens: verifyTokenCache,
+	})
+
 	// INITIALIZE HANDLERS AND SERVER
 
-	authHandler := connecttransport.NewAuthHandler(registerUC, loginUC, refreshUC)
+	authHandler := connecttransport.NewAuthHandler(
+		registerUC,
+		loginUC,
+		refreshUC,
+		verifyEmailUC
+	)
 
 	mux := http.NewServeMux()
 	mux.Handle("/healthz", healthHandler())

@@ -80,8 +80,3 @@ func (uc *RefreshUseCase) Execute(ctx context.Context, in RefreshInput) (*Refres
 		ExpiresIn:    expiresIn,
 	}, nil
 }
-
-func hashRefresh(token string) string {
-	h := sha256.Sum256([]byte(token))
-	return hex.EncodeToString(h[:])
-}

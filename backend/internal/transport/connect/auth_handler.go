@@ -16,18 +16,21 @@ import (
 type AuthHandler struct {
 	registerUC *authuc.RegisterUseCase
 	loginUC    *authuc.LoginUseCase
-	refreshUC  *authuc.RefreshUseCase
+	refreshUC  	  *authuc.RefreshUseCase
+	verifyEmailUC *authuc.VerifyEmailUseCase
 }
 
 func NewAuthHandler(
 	registerUC *authuc.RegisterUseCase,
 	loginUC *authuc.LoginUseCase,
 	refreshUC *authuc.RefreshUseCase,
+	verifyEmailUC *authuc.VerifyEmailUseCase,
 ) *AuthHandler {
 	return &AuthHandler{
 		registerUC: registerUC,
 		loginUC:    loginUC,
 		refreshUC:  refreshUC,
+		verifyEmailUC: verifyEmailUC,
 	}
 }
 
@@ -130,7 +133,16 @@ func (h *AuthHandler) VerifyEmail(
 	ctx context.Context,
 	req *connect.Request[authv1.VerifyEmailRequest],
 ) (*connect.Response[authv1.VerifyEmailResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, nil)
+	out, err := h.verifyEmailUC.Execute(ctx, authuc.VerifyEmailInput{
+		Token: req.Msg.Token,
+	})
+	if err != nil {
+		return nil, mapDomainError(err)
+	}
+
+	return connect.NewResponse(&authv1.VerifyEmailResponse{
+		Success: out.UserID > 0,
+	}), nil
 }
 
 func (h *AuthHandler) ForgotPassword(
