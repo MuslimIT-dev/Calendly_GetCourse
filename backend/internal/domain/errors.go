@@ -20,4 +20,6 @@ var (
     ErrInvalidInput              = errors.New("invalid input")
     ErrSlugTaken                 = errors.New("slug is already taken")
     ErrMasterNotFound            = errors.New("master not found")
+    ErrLocationNotFound          = errors.New("location not found")
+	ErrForbidden                 = errors.New("forbidden")
 )

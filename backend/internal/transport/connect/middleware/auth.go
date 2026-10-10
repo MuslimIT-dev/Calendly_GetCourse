@@ -27,6 +27,9 @@ var publicMethods = map[string]struct{}{
 	"/master.v1.MasterService/ListMasters": {},
 	"/master.v1.MasterService/GetMaster":   {},
 
+	"/location.v1.LocationService/ListLocations": {},
+	"/location.v1.LocationService/GetLocation":   {},
+
 	"/catalog.v1.CatalogService/ListCategories":      {},
 	"/catalog.v1.CatalogService/ListDefaultServices": {},
 	"/catalog.v1.CatalogService/GetDefaultService":   {},

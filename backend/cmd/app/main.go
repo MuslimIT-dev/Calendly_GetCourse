@@ -84,6 +84,7 @@ func main() {
 
 	userRepo := postgres.NewUserRepo(queries)
 	masterRepo := postgres.NewMasterRepo(queries)
+	locationRepo := postgres.NewLocationRepo(queries)
 
 	// INITIALIZE CACHES
 	sessionCache := cache.NewRedisCache[authuc.SessionValue](rdb)
@@ -91,6 +92,7 @@ func main() {
 	passwordResetCache := cache.NewRedisCache[authuc.PasswordResetValue](rdb)
 	userCache := cache.NewRedisCache[useruc.CachedUser](rdb)
 	masterCache := cache.NewRedisCache[domain.CachedMaster](rdb)
+	locationCache := cache.NewRedisCache[domain.CachedLocations](rdb)
 
 	// INITIALIZE KAFKA PUBLISHER
 	publisher := broker.NewKafkaPublisher[authuc.UserRegisteredEvent](kafkaWriter)
@@ -205,6 +207,21 @@ func main() {
 	updateMasterUC := masteruc.NewUpdateMasterUseCase(masterDeps)
 	updateSlugUC := masteruc.NewUpdateSlugUseCase(masterDeps)
 
+	// location
+	locationDeps := locationuc.Deps{
+		Locations: locationRepo,
+		Masters:   masterRepo,
+		Cache:     locationCache,
+		CacheTTL:  5 * time.Minute,
+	}
+
+	listLocationsUC := locationuc.NewListLocationsUseCase(locationDeps)
+	getLocationUC := locationuc.NewGetLocationUseCase(locationDeps)
+	createLocationUC := locationuc.NewCreateLocationUseCase(locationDeps)
+	updateLocationUC := locationuc.NewUpdateLocationUseCase(locationDeps)
+	deleteLocationUC := locationuc.NewDeleteLocationUseCase(locationDeps)
+
+
 	// INITIALIZE HANDLERS
 
 	authHandler := connecttransport.NewAuthHandler(
@@ -228,6 +245,14 @@ func main() {
 		getMyProfileUC,
 		updateMasterUC,
 		updateSlugUC,
+	)
+
+	locationHandler := connecttransport.NewLocationHandler(
+		listLocationsUC,
+		getLocationUC,
+		createLocationUC,
+		updateLocationUC,
+		deleteLocationUC,
 	)
 
 	// INITIALIZE HTTP SERVER
@@ -262,6 +287,15 @@ func main() {
 		),
 	)
 	mux.Handle(masterPath, masterH)
+
+	locationPath, locationH := locationv1connect.NewLocationServiceHandler(
+		locationHandler,
+		connect.WithInterceptors(
+			middleware.NewAuthInterceptor(tokenService),
+			middleware.NewRBACInterceptor(),
+		),
+	)
+	mux.Handle(locationPath, locationH)
 
 	srv := &http.Server{
 		Addr:    ":8080",

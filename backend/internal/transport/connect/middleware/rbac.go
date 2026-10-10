@@ -44,8 +44,6 @@ var rolePermissions = map[string][]domain.Role{
 	"/schedule.v1.ScheduleService/AddException":        {roleAdmin, roleMaster},
 	"/schedule.v1.ScheduleService/DeleteException":     {roleAdmin, roleMaster},
 
-	"/location.v1.LocationService/ListLocations":  {roleAdmin, roleMaster},
-	"/location.v1.LocationService/GetLocation":    {roleAdmin, roleMaster},
 	"/location.v1.LocationService/CreateLocation": {roleAdmin, roleMaster},
 	"/location.v1.LocationService/UpdateLocation": {roleAdmin, roleMaster},
 	"/location.v1.LocationService/DeleteLocation": {roleAdmin, roleMaster},
