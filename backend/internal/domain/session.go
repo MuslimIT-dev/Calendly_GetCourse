@@ -14,6 +14,14 @@ type Session struct {
 	ExpiresAt   time.Time
 }
 
+type SessionValue struct {
+	UserID    int32     `json:"user_id"`
+	Roles     []int32   `json:"roles"`
+	IPAddress string    `json:"ip_address"`
+	UserAgent string    `json:"user_agent"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 type SessionRepository interface {
 	Create(ctx context.Context, s *Session) error
 	GetByHash(ctx context.Context, hash string) (*Session, error)

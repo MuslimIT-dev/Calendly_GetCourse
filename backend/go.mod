@@ -23,6 +23,8 @@ require (
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/pierrec/lz4/v4 v4.1.16 // indirect
+	github.com/wneessen/go-hibp v1.1.0 // indirect
+	github.com/wneessen/niljson v0.1.0 // indirect
 	go.uber.org/atomic v1.12.0 // indirect
 	golang.org/x/sync v0.21.0 // indirect
 	golang.org/x/sys v0.48.0 // indirect

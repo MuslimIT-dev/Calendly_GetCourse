@@ -49,6 +49,10 @@ var rolePermissions = map[string][]domain.Role{
 	"/location.v1.LocationService/UpdateLocation": {roleAdmin, roleMaster},
 	"/location.v1.LocationService/DeleteLocation": {roleAdmin, roleMaster},
 
+	"/user.v1.UserService/GetMe":      {roleAdmin, roleMaster, roleClient},
+	"/user.v1.UserService/UpdateUser": {roleAdmin, roleMaster, roleClient},
+	"/user.v1.UserService/GetUser":    {roleAdmin, roleClient},
+
 	"/booking.v1.BookingService/CreateAppointment":      {roleAdmin, roleMaster, roleClient},
 	"/booking.v1.BookingService/GetAppointment":         {roleAdmin, roleMaster, roleClient},
 	"/booking.v1.BookingService/ListMyAppointments":     {roleAdmin, roleMaster, roleClient},

@@ -20,14 +20,6 @@ type BreachChecker interface {
 	IsPwned(ctx context.Context, password string) bool
 }
 
-type SessionValue struct {
-	UserID    int32     `json:"user_id"`
-	Roles     []int32   `json:"roles"`
-	IPAddress string    `json:"ip_address"`
-	UserAgent string    `json:"user_agent"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
 type VerifyEmailValue struct {
 	UserID    int32     `json:"user_id"`
 	CreatedAt time.Time `json:"created_at"`
@@ -42,7 +34,7 @@ type UserRegisteredEvent struct {
 
 type Deps struct {
 	Users            domain.UserRepository
-	Sessions         domain.Cache[SessionValue]
+	Sessions         domain.Cache[domain.SessionValue]
 	VerifyTokens     domain.Cache[VerifyEmailValue]
 	PasswordResets   domain.Cache[PasswordResetValue]
 	Breach           BreachChecker

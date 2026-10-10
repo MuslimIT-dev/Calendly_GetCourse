@@ -17,4 +17,5 @@ var (
     ErrSessionNotFound           = errors.New("session not found")
     ErrEmailNotVerified          = errors.New("email not verified")
     ErrPwnedPassword             = errors.New("password has been exposed in a data breach")
+    ErrInvalidInput              = errors.New("invalid input")
 )

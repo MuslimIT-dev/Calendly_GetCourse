@@ -19,6 +19,17 @@ type User struct {
 	UpdatedAt time.Time
 }
 
+type CachedUser struct {
+	ID            int32     `json:"id"`
+	Name          string    `json:"name"`
+	Email         string    `json:"email"`
+	AvatarURL     string    `json:"avatar_url"`
+	Timezone      string    `json:"timezone"`
+	EmailVerified bool      `json:"email_verified"`
+	Roles         []Role    `json:"roles"`
+	UpdatedAt     time.Time `json:"updated_at"`
+}
+
 type Role int32
 
 const (

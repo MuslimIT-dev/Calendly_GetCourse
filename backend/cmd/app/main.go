@@ -20,6 +20,7 @@ import (
 
 	migrationfiles "github.com/MuslimIT-dev/Calendly_GetCourse/backend/db/migrations"
 	authv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/auth/v1/authv1connect"
+	userv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1/userv1connect"
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/infrastructure/broker"
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/infrastructure/cache"
 	postgresdb "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/db"
@@ -27,6 +28,7 @@ import (
 	connecttransport "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/transport/connect"
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/transport/connect/middleware"
 	authuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/auth"
+	useruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/user"
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/pkg/hasher"
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/pkg/jwt"
 )
@@ -80,6 +82,7 @@ func main() {
 	sessionCache := cache.NewRedisCache[authuc.SessionValue](rdb)
 	verifyTokenCache := cache.NewRedisCache[authuc.VerifyEmailValue](rdb)
 	passwordResetCache := cache.NewRedisCache[authuc.PasswordResetValue](rdb)
+	userCache := cache.NewRedisCache[useruc.CachedUser](rdb)
 
 	// INITIALIZE KAFKA PUBLISHER
 	publisher := broker.NewKafkaPublisher[authuc.UserRegisteredEvent](kafkaWriter)
@@ -91,6 +94,8 @@ func main() {
 	breachChecker := password.NewBreachChecker()
 
 	// INITIALIZE USE CASES
+
+	// auth
 
 	registerUC := authuc.NewRegisterUseCase(authuc.Deps{
 		Users:          userRepo,
@@ -160,7 +165,27 @@ func main() {
 		Sessions: sessionCache,
 	})
 
-	// INITIALIZE HANDLERS AND SERVER
+	// user
+
+	getUserUC := useruc.NewGetUserUseCase(useruc.Deps{
+		Users: userRepo,
+		Cache: userCache,
+		CacheTTL: 10 * time.Minute,
+	})
+
+	getMeUC := useruc.NewGetMeUseCase(useruc.Deps{
+		Users: userRepo,
+		Cache: userCache,
+		CacheTTL: 10 * time.Minute,
+	})
+
+	updateUserUC := useruc.NewUpdateUserUseCase(useruc.Deps{
+		Users: userRepo,
+		Cache: userCache,
+		CacheTTL: 10 * time.Minute,
+	})
+
+	// INITIALIZE HANDLERS
 
 	authHandler := connecttransport.NewAuthHandler(
 		registerUC,
@@ -175,6 +200,10 @@ func main() {
 		listSessionsUC,
 	)
 
+	userHandler := connecttransport.NewUserHandler(getUserUC, getMeUC, updateUserUC)
+
+	// INITIALIZE HTTP SERVER
+
 	mux := http.NewServeMux()
 	mux.Handle("/healthz", healthHandler())
 	mux.Handle("/readyz", readyHandler(pool, rdb))
@@ -187,6 +216,15 @@ func main() {
 		),
 	)
 	mux.Handle(authPath, authH)
+
+	userPath, userH := userv1connect.NewUserServiceHandler(
+		userHandler,
+		connect.WithInterceptors(
+			middleware.NewAuthInterceptor(tokenService),
+			middleware.NewRBACInterceptor(),
+		),
+	)
+	mux.Handle(userPath, userH)
 
 	srv := &http.Server{
 		Addr:    ":8080",
