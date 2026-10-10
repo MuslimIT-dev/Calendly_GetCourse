@@ -20,6 +20,10 @@ type AuthHandler struct {
 	verifyEmailUC *authuc.VerifyEmailUseCase
 	forgotPasswordUC *authuc.ForgotPasswordUseCase
 	resetPasswordUC *authuc.ResetPasswordUseCase
+	logoutUC *authuc.LogoutUseCase
+	logoutAllUC *authuc.LogoutAllUseCase
+	changePasswordUC *authuc.ChangePasswordUseCase
+	listSessionsUC *authuc.ListSessionsUseCase
 }
 
 func NewAuthHandler(
@@ -28,7 +32,11 @@ func NewAuthHandler(
 	refreshUC *authuc.RefreshUseCase,
 	verifyEmailUC *authuc.VerifyEmailUseCase,
 	forgotPasswordUC *authuc.ForgotPasswordUseCase,
-	resetPasswordUC *authuc.ResetPasswordUseCase
+	resetPasswordUC *authuc.ResetPasswordUseCase,
+	logoutUC *authuc.LogoutUseCase,
+	logoutAllUC *authuc.LogoutAllUseCase,
+	changePasswordUC *authuc.ChangePasswordUseCase,
+	listSessionsUC *authuc.ListSessionsUseCase,
 ) *AuthHandler {
 	return &AuthHandler{
 		registerUC: registerUC,
@@ -37,6 +45,10 @@ func NewAuthHandler(
 		verifyEmailUC: verifyEmailUC,
 		forgotPasswordUC: forgotPasswordUC,
 		resetPasswordUC: resetPasswordUC,
+		logoutUC: logoutUC,
+		logoutAllUC: logoutAllUC,
+		changePasswordUC: changePasswordUC,
+		listSessionsUC: listSessionsUC,
 	}
 }
 
@@ -208,12 +220,41 @@ func (h *AuthHandler) ChangePassword(
 	ctx context.Context,
 	req *connect.Request[authv1.ChangePasswordRequest],
 ) (*connect.Response[authv1.ChangePasswordResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, nil)
+	_, err := h.changePasswordUC.Execute(ctx, authuc.ChangePasswordInput{
+		CurrentPassword: req.Msg.CurrentPassword,
+		NewPassword:     req.Msg.NewPassword,
+	})
+	if err != nil {
+		return nil, mapDomainError(err)
+	}
+	return connect.NewResponse(&authv1.ChangePasswordResponse{}), nil
 }
 
 func (h *AuthHandler) ListSessions(
 	ctx context.Context,
 	req *connect.Request[authv1.ListSessionsRequest],
 ) (*connect.Response[authv1.ListSessionsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, nil)
+	refresh := req.Header().Get("X-Refresh-Token")
+
+	out, err := h.listSessionsUC.Execute(ctx, authuc.ListSessionsInput{
+		CurrentRefreshToken: refresh,
+	})
+	if err != nil {
+		return nil, mapDomainError(err)
+	}
+
+	sessions := make([]*authv1.Session, len(out.Sessions))
+	for i, s := range out.Sessions {
+		sessions[i] = &authv1.Session{
+			Id:        s.ID,
+			IpAddress: s.IPAddress,
+			UserAgent: s.UserAgent,
+			CreatedAt: timestamppb.New(mustParseTime(s.CreatedAt)),
+			IsCurrent: s.IsCurrent,
+		}
+	}
+
+	return connect.NewResponse(&authv1.ListSessionsResponse{
+		Sessions: sessions,
+	}), nil
 }

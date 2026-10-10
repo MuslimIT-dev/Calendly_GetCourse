@@ -16,6 +16,10 @@ type TokenService interface {
 	VerifyRefresh(token string) (userID int32, roles []domain.Role, err error)
 }
 
+type BreachChecker interface {
+	IsPwned(ctx context.Context, password string) bool
+}
+
 type SessionValue struct {
 	UserID    int32     `json:"user_id"`
 	Roles     []int32   `json:"roles"`
@@ -41,6 +45,7 @@ type Deps struct {
 	Sessions         domain.Cache[SessionValue]
 	VerifyTokens     domain.Cache[VerifyEmailValue]
 	PasswordResets   domain.Cache[PasswordResetValue]
+	Breach           BreachChecker
 	Hasher           PasswordHasher
 	Tokens           TokenService
 	Events           domain.Publisher[UserRegisteredEvent]

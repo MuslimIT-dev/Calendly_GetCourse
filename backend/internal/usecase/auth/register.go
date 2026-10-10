@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
+	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/pkg/password"
 )
 
 type RegisterInput struct {
@@ -42,6 +43,14 @@ func (uc *RegisterUseCase) Execute(ctx context.Context, in RegisterInput) (*Regi
 	roles := []domain.Role{domain.RoleUser}
 	if in.Role == domain.RoleMaster {
 		roles = []domain.Role{domain.RoleMaster, domain.RoleUser}
+	}
+
+	if password.IsWeak(in.Password) {
+		return nil, domain.ErrWeakPassword
+	}
+
+	if uc.deps.Breach.IsPwned(ctx, in.Password) {
+		return nil, domain.ErrPwnedPassword
 	}
 
 	hash, err := uc.deps.Hasher.Hash(in.Password)

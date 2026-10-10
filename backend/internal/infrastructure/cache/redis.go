@@ -58,3 +58,24 @@ func (r *RedisCache[T]) DeleteByPattern(ctx context.Context, pattern string) (in
 	}
 	return count, iter.Err()
 }
+
+func (r *RedisCache[T]) ScanValues(ctx context.Context, pattern string) (map[string]*T, error) {
+	iter := r.client.Scan(ctx, 0, pattern, 100).Iterator()
+	out := make(map[string]*T)
+	for iter.Next(ctx) {
+		key := iter.Val()
+		val, err := r.client.Get(ctx, key).Result()
+		if err != nil {
+			if err == redis.Nil {
+				continue
+			}
+			return nil, err
+		}
+		var item T
+		if err := json.Unmarshal([]byte(val), &item); err != nil {
+			return nil, err
+		}
+		out[key] = &item
+	}
+	return out, iter.Err()
+}

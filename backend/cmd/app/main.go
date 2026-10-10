@@ -88,6 +88,7 @@ func main() {
 	// INITIALIZE SERVICES
 	passwordHasher := hasher.NewBcryptHasher()
 	tokenService := jwt.NewJWTService(jwtSecret, "calendly-clone")
+	breachChecker := password.NewBreachChecker()
 
 	// INITIALIZE USE CASES
 
@@ -97,6 +98,7 @@ func main() {
 		VerifyTokens:   verifyTokenCache,
 		Hasher:         passwordHasher,
 		Tokens:         tokenService,
+		Breach:         breachChecker,
 		Events:         publisher,
 		SessionTTL:     30 * 24 * time.Hour,
 		VerifyTokenTTL: 24 * time.Hour,
@@ -147,6 +149,17 @@ func main() {
 		ResetEvents:    resetEvents,
 	})
 
+	changePasswordUC := authuc.NewChangePasswordUseCase(authuc.Deps{
+		Users:  userRepo,
+		Sessions: sessionCache,
+		Hasher: passwordHasher,
+		Breach: breachChecker,
+	})
+
+	listSessionsUC := authuc.NewListSessionsUseCase(authuc.Deps{
+		Sessions: sessionCache,
+	})
+
 	// INITIALIZE HANDLERS AND SERVER
 
 	authHandler := connecttransport.NewAuthHandler(
@@ -158,6 +171,8 @@ func main() {
 		resetPasswordUC,
 		logoutUC,
 		logoutAllUC,
+		changePasswordUC,
+		listSessionsUC,
 	)
 
 	mux := http.NewServeMux()
