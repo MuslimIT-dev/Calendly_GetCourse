@@ -37,12 +37,14 @@ type UserRegisteredEvent struct {
 }
 
 type Deps struct {
-	Users          domain.UserRepository
-	Sessions       domain.Cache[SessionValue]
-	VerifyTokens   domain.Cache[VerifyEmailValue]
-	Hasher         PasswordHasher
-	Tokens         TokenService
-	Events         domain.Publisher[UserRegisteredEvent]
-	SessionTTL     time.Duration
-	VerifyTokenTTL time.Duration
+	Users            domain.UserRepository
+	Sessions         domain.Cache[SessionValue]
+	VerifyTokens     domain.Cache[VerifyEmailValue]
+	PasswordResets   domain.Cache[PasswordResetValue]
+	Hasher           PasswordHasher
+	Tokens           TokenService
+	Events           domain.Publisher[UserRegisteredEvent]
+	SessionTTL       time.Duration
+	VerifyTokenTTL   time.Duration
+	PasswordResetTTL time.Duration
 }

@@ -18,6 +18,8 @@ type AuthHandler struct {
 	loginUC    *authuc.LoginUseCase
 	refreshUC  	  *authuc.RefreshUseCase
 	verifyEmailUC *authuc.VerifyEmailUseCase
+	forgotPasswordUC *authuc.ForgotPasswordUseCase
+	resetPasswordUC *authuc.ResetPasswordUseCase
 }
 
 func NewAuthHandler(
@@ -25,12 +27,16 @@ func NewAuthHandler(
 	loginUC *authuc.LoginUseCase,
 	refreshUC *authuc.RefreshUseCase,
 	verifyEmailUC *authuc.VerifyEmailUseCase,
+	forgotPasswordUC *authuc.ForgotPasswordUseCase,
+	resetPasswordUC *authuc.ResetPasswordUseCase
 ) *AuthHandler {
 	return &AuthHandler{
 		registerUC: registerUC,
 		loginUC:    loginUC,
 		refreshUC:  refreshUC,
 		verifyEmailUC: verifyEmailUC,
+		forgotPasswordUC: forgotPasswordUC,
+		resetPasswordUC: resetPasswordUC,
 	}
 }
 
@@ -149,14 +155,27 @@ func (h *AuthHandler) ForgotPassword(
 	ctx context.Context,
 	req *connect.Request[authv1.ForgotPasswordRequest],
 ) (*connect.Response[authv1.ForgotPasswordResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, nil)
+	_, err := h.forgotPasswordUC.Execute(ctx, authuc.ForgotPasswordInput{
+		Email: req.Msg.Email,
+	})
+	if err != nil {
+		return nil, mapDomainError(err)
+	}
+	return connect.NewResponse(&authv1.ForgotPasswordResponse{}), nil
 }
 
 func (h *AuthHandler) ResetPassword(
 	ctx context.Context,
 	req *connect.Request[authv1.ResetPasswordRequest],
 ) (*connect.Response[authv1.ResetPasswordResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, nil)
+	_, err := h.resetPasswordUC.Execute(ctx, authuc.ResetPasswordInput{
+		Token:       req.Msg.Token,
+		NewPassword: req.Msg.NewPassword,
+	})
+	if err != nil {
+		return nil, mapDomainError(err)
+	}
+	return connect.NewResponse(&authv1.ResetPasswordResponse{}), nil
 }
 
 func (h *AuthHandler) Logout(

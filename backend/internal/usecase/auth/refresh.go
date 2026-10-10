@@ -44,7 +44,7 @@ func (uc *RefreshUseCase) Execute(ctx context.Context, in RefreshInput) (*Refres
 		return nil, fmt.Errorf("session lookup: %w", err)
 	}
 	if session == nil {
-		_ = uc.deps.Sessions.DeleteByPattern(ctx, "session:*")
+		_ = uc.deps.Sessions.DeleteByPattern(ctx, "session:*:user:"+fmt.Sprint(userID))
 		return nil, domain.ErrInvalidToken
 	}
 
@@ -62,7 +62,6 @@ func (uc *RefreshUseCase) Execute(ctx context.Context, in RefreshInput) (*Refres
 		return nil, fmt.Errorf("generate tokens: %w", err)
 	}
 
-	newHash := sha256Hex(refresh)
 	newSession := SessionValue{
 		UserID:    user.ID,
 		Roles:     toInt32Slice(user.Roles),
@@ -70,7 +69,8 @@ func (uc *RefreshUseCase) Execute(ctx context.Context, in RefreshInput) (*Refres
 		UserAgent: in.UserAgent,
 		CreatedAt: time.Now().UTC(),
 	}
-	if err := uc.deps.Sessions.Set(ctx, "session:"+newHash, &newSession, uc.deps.SessionTTL); err != nil {
+	key := fmt.Sprintf("session:%d:%s", user.ID, sha256Hex(refresh))
+	if err := uc.deps.Sessions.Set(ctx, key, &newSession, uc.deps.SessionTTL); err != nil {
 		return nil, fmt.Errorf("save session: %w", err)
 	}
 

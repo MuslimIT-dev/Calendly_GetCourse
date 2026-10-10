@@ -70,15 +70,22 @@ func main() {
 	}
 	defer kafkaWriter.Close()
 
-	// INITIALIZE REPOSITORIES, CACHES, AND SERVICES
+	// INITIALIZE REPOSITORIES
 
 	queries := postgresdb.New(pool)
 
 	userRepo := postgres.NewUserRepo(queries)
+
+	// INITIALIZE CACHES
 	sessionCache := cache.NewRedisCache[authuc.SessionValue](rdb)
 	verifyTokenCache := cache.NewRedisCache[authuc.VerifyEmailValue](rdb)
-	publisher := broker.NewKafkaPublisher[authuc.UserRegisteredEvent](kafkaWriter)
+	passwordResetCache := cache.NewRedisCache[authuc.PasswordResetValue](rdb)
 
+	// INITIALIZE KAFKA PUBLISHER
+	publisher := broker.NewKafkaPublisher[authuc.UserRegisteredEvent](kafkaWriter)
+	resetEvents := broker.NewKafkaPublisher[authuc.PasswordResetRequestedEvent](kafkaWriter)
+
+	// INITIALIZE SERVICES
 	passwordHasher := hasher.NewBcryptHasher()
 	tokenService := jwt.NewJWTService(jwtSecret, "calendly-clone")
 
@@ -115,13 +122,30 @@ func main() {
 		VerifyTokens: verifyTokenCache,
 	})
 
+	forgotPasswordUC := authuc.NewForgotPasswordUseCase(authuc.Deps{
+		Users:            userRepo,
+		PasswordResets:   passwordResetCache,
+		ResetEvents:      resetEvents,
+		PasswordResetTTL: time.Hour,
+	})
+
+	resetPasswordUC := authuc.NewResetPasswordUseCase(authuc.Deps{
+		Users:          userRepo,
+		Sessions:       sessionCache,
+		PasswordResets: passwordResetCache,
+		Hasher:         passwordHasher,
+		ResetEvents:    resetEvents,
+	})
+
 	// INITIALIZE HANDLERS AND SERVER
 
 	authHandler := connecttransport.NewAuthHandler(
 		registerUC,
 		loginUC,
 		refreshUC,
-		verifyEmailUC
+		verifyEmailUC,
+		forgotPasswordUC,
+		resetPasswordUC,
 	)
 
 	mux := http.NewServeMux()

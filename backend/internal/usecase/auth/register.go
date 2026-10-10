@@ -63,13 +63,14 @@ func (uc *RegisterUseCase) Execute(ctx context.Context, in RegisterInput) (*Regi
 		return nil, fmt.Errorf("generate tokens: %w", err)
 	}
 
-	refreshHash := sha256Hex(refresh)
 	session := SessionValue{
 		UserID:    user.ID,
 		Roles:     toInt32Slice(roles),
 		CreatedAt: time.Now().UTC(),
 	}
-	if err := uc.deps.Sessions.Set(ctx, "session:"+refreshHash, &session, uc.deps.SessionTTL); err != nil {
+
+	key := fmt.Sprintf("session:%d:%s", user.ID, sha256Hex(refresh))
+	if err := uc.deps.Sessions.Set(ctx, key, &session, uc.deps.SessionTTL); err != nil {
 		return nil, fmt.Errorf("save session: %w", err)
 	}
 
