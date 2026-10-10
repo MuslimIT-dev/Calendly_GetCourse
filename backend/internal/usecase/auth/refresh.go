@@ -31,7 +31,7 @@ func NewRefreshUseCase(deps Deps) *RefreshUseCase {
 }
 
 func (uc *RefreshUseCase) Execute(ctx context.Context, in RefreshInput) (*RefreshOutput, error) {
-	userID, roles, err := uc.deps.Tokens.VerifyRefresh(in.RefreshToken)
+	userID, _, err := uc.deps.Tokens.VerifyRefresh(in.RefreshToken)
 	if err != nil {
 		return nil, domain.ErrInvalidToken
 	}
