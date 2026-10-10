@@ -22,6 +22,7 @@ var publicMethods = map[string]struct{}{
 	"/auth.v1.AuthService/VerifyEmail":    {},
 	"/auth.v1.AuthService/ForgotPassword": {},
 	"/auth.v1.AuthService/ResetPassword":  {},
+	"/auth.v1.AuthService/Logout":         {},
 
 	"/master.v1.MasterService/ListMasters": {},
 	"/master.v1.MasterService/GetMaster":   {},
