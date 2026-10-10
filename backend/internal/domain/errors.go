@@ -18,4 +18,6 @@ var (
     ErrEmailNotVerified          = errors.New("email not verified")
     ErrPwnedPassword             = errors.New("password has been exposed in a data breach")
     ErrInvalidInput              = errors.New("invalid input")
+    ErrSlugTaken                 = errors.New("slug is already taken")
+    ErrMasterNotFound            = errors.New("master not found")
 )

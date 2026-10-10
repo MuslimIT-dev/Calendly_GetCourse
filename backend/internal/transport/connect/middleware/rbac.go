@@ -29,8 +29,9 @@ var rolePermissions = map[string][]domain.Role{
 
 	"/review.v1.ReviewService/HideReview": {roleAdmin},
 
-	"/master.v1.MasterService/UpdateMaster": {roleAdmin, roleMaster},
-	"/master.v1.MasterService/UpdateSlug":   {roleAdmin, roleMaster},
+	"/master.v1.MasterService/GetMyMasterProfile": {roleAdmin, roleMaster},
+	"/master.v1.MasterService/UpdateMaster":       {roleAdmin, roleMaster},
+	"/master.v1.MasterService/UpdateSlug":   	   {roleAdmin, roleMaster},
 
 	"/service.v1.ServiceService/GetMyServices": {roleAdmin, roleMaster},
 	"/service.v1.ServiceService/AddService":    {roleAdmin, roleMaster},

@@ -19,18 +19,24 @@ import (
 	kafkago "github.com/segmentio/kafka-go"
 
 	migrationfiles "github.com/MuslimIT-dev/Calendly_GetCourse/backend/db/migrations"
-	authv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/auth/v1/authv1connect"
-	userv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1/userv1connect"
+	postgresdb "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/db"
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/infrastructure/broker"
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/infrastructure/cache"
-	postgresdb "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/db"
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/postgres"
-	connecttransport "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/transport/connect"
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/transport/connect/middleware"
-	authuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/auth"
-	useruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/user"
+
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/pkg/hasher"
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/pkg/jwt"
+
+	authv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/auth/v1/authv1connect"
+	userv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1/userv1connect"
+	masterv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/master/v1/masterv1connect"
+	
+	connecttransport "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/transport/connect"
+	
+	authuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/auth"
+	useruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/user"
+	masteruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/master"
 )
 
 func main() {
@@ -77,12 +83,14 @@ func main() {
 	queries := postgresdb.New(pool)
 
 	userRepo := postgres.NewUserRepo(queries)
+	masterRepo := postgres.NewMasterRepo(queries)
 
 	// INITIALIZE CACHES
 	sessionCache := cache.NewRedisCache[authuc.SessionValue](rdb)
 	verifyTokenCache := cache.NewRedisCache[authuc.VerifyEmailValue](rdb)
 	passwordResetCache := cache.NewRedisCache[authuc.PasswordResetValue](rdb)
 	userCache := cache.NewRedisCache[useruc.CachedUser](rdb)
+	masterCache := cache.NewRedisCache[domain.CachedMaster](rdb)
 
 	// INITIALIZE KAFKA PUBLISHER
 	publisher := broker.NewKafkaPublisher[authuc.UserRegisteredEvent](kafkaWriter)
@@ -185,6 +193,18 @@ func main() {
 		CacheTTL: 10 * time.Minute,
 	})
 
+	// master
+	masterDeps := masteruc.Deps{
+		Masters:  masterRepo,
+		Cache:    masterCache,
+		CacheTTL: 10 * time.Minute,
+	}
+	listMastersUC := masteruc.NewListMastersUseCase(masterDeps)
+	getMasterUC := masteruc.NewGetMasterUseCase(masterDeps)
+	getMyProfileUC := masteruc.NewGetMyProfileUseCase(masterDeps)
+	updateMasterUC := masteruc.NewUpdateMasterUseCase(masterDeps)
+	updateSlugUC := masteruc.NewUpdateSlugUseCase(masterDeps)
+
 	// INITIALIZE HANDLERS
 
 	authHandler := connecttransport.NewAuthHandler(
@@ -201,6 +221,14 @@ func main() {
 	)
 
 	userHandler := connecttransport.NewUserHandler(getUserUC, getMeUC, updateUserUC)
+
+	masterHandler := connecttransport.NewMasterHandler(
+		listMastersUC,
+		getMasterUC,
+		getMyProfileUC,
+		updateMasterUC,
+		updateSlugUC,
+	)
 
 	// INITIALIZE HTTP SERVER
 
@@ -225,6 +253,15 @@ func main() {
 		),
 	)
 	mux.Handle(userPath, userH)
+
+	masterPath, masterH := masterv1connect.NewMasterServiceHandler(
+		masterHandler,
+		connect.WithInterceptors(
+			middleware.NewAuthInterceptor(tokenService),
+			middleware.NewRBACInterceptor(),
+		),
+	)
+	mux.Handle(masterPath, masterH)
 
 	srv := &http.Server{
 		Addr:    ":8080",
