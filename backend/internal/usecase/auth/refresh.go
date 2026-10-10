@@ -44,7 +44,7 @@ func (uc *RefreshUseCase) Execute(ctx context.Context, in RefreshInput) (*Refres
 		return nil, fmt.Errorf("session lookup: %w", err)
 	}
 	if session == nil {
-		_ = uc.deps.Sessions.DeleteByPattern(ctx, "session:*:user:"+fmt.Sprint(userID))
+		_, _ = uc.deps.Sessions.DeleteByPattern(ctx, "session:*:user:"+fmt.Sprint(userID))
 		return nil, domain.ErrInvalidToken
 	}
 

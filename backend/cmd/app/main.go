@@ -117,6 +117,16 @@ func main() {
 		SessionTTL:   30 * 24 * time.Hour,
 	})
 
+	logoutUC := authuc.NewLogoutUseCase(authuc.Deps{
+		Sessions: sessionCache,
+		Tokens:   tokenService,
+	})
+
+	logoutAllUC := authuc.NewLogoutAllUseCase(authuc.Deps{
+		Sessions: sessionCache,
+		Tokens:   tokenService,
+	})
+
 	verifyEmailUC := authuc.NewVerifyEmailUseCase(authuc.Deps{
 		Users:        userRepo,
 		VerifyTokens: verifyTokenCache,
@@ -146,6 +156,8 @@ func main() {
 		verifyEmailUC,
 		forgotPasswordUC,
 		resetPasswordUC,
+		logoutUC,
+		logoutAllUC,
 	)
 
 	mux := http.NewServeMux()

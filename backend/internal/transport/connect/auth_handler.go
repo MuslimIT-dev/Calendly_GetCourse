@@ -182,14 +182,26 @@ func (h *AuthHandler) Logout(
 	ctx context.Context,
 	req *connect.Request[authv1.LogoutRequest],
 ) (*connect.Response[authv1.LogoutResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, nil)
+	_, err := h.logoutUC.Execute(ctx, authuc.LogoutInput{
+		RefreshToken: req.Msg.RefreshToken,
+	})
+	if err != nil {
+		return nil, mapDomainError(err)
+	}
+	return connect.NewResponse(&authv1.LogoutResponse{}), nil
 }
 
 func (h *AuthHandler) LogoutAll(
 	ctx context.Context,
 	req *connect.Request[authv1.LogoutAllRequest],
 ) (*connect.Response[authv1.LogoutAllResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, nil)
+	out, err := h.logoutAllUC.Execute(ctx, authuc.LogoutAllInput{})
+	if err != nil {
+		return nil, mapDomainError(err)
+	}
+	return connect.NewResponse(&authv1.LogoutAllResponse{
+		RevokedSessions: out.RevokedCount,
+	}), nil
 }
 
 func (h *AuthHandler) ChangePassword(

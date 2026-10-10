@@ -46,16 +46,15 @@ func (r *RedisCache[T]) Delete(ctx context.Context, key string) error {
 	return r.client.Del(ctx, key).Err()
 }
 
-func (r *RedisCache[T]) DeleteByPattern(ctx context.Context, pattern string) error {
-	iter := r.client.Scan(ctx, 0, pattern, 0).Iterator()
+func (r *RedisCache[T]) DeleteByPattern(ctx context.Context, pattern string) (int64, error) {
+	var count int64
+	iter := r.client.Scan(ctx, 0, pattern, 100).Iterator()
 	for iter.Next(ctx) {
-		if err := r.client.Del(ctx, iter.Val()).Err(); err != nil {
-			return err
+		n, err := r.client.Del(ctx, iter.Val()).Result()
+		if err != nil {
+			return count, err
 		}
+		count += n
 	}
-	if err := iter.Err(); err != nil {
-		return err
-	}
-
-	return nil
+	return count, iter.Err()
 }
