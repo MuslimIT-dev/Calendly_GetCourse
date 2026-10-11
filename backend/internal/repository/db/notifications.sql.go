@@ -174,7 +174,7 @@ FROM notifications n
 WHERE n.user_id = $1
   AND ($2::smallint IS NULL OR n.status = $2)
   AND ($3::timestamptz IS NULL
-       OR (n.created_at, n.id) < ($3, $4))
+       OR (n.created_at, n.id) < ($3, $4::bigint))
 ORDER BY n.created_at DESC, n.id DESC
 LIMIT $5
 `
@@ -183,7 +183,7 @@ type ListMyNotificationsParams struct {
 	UserID       int32              `json:"user_id"`
 	StatusFilter pgtype.Int2        `json:"status_filter"`
 	CursorTime   pgtype.Timestamptz `json:"cursor_time"`
-	CursorID     pgtype.Timestamptz `json:"cursor_id"`
+	CursorID     pgtype.Int8        `json:"cursor_id"`
 	PageSize     int32              `json:"page_size"`
 }
 

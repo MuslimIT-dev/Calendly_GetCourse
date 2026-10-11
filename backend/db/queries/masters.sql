@@ -1,3 +1,8 @@
+-- name: GetMasterUserID :one
+SELECT user_id
+FROM masters
+WHERE id = $1;
+
 -- name: ListMastersByRating :many
 SELECT
     m.id, m.user_id, m.slug, m.bio, m.specialization, m.years_of_experience,

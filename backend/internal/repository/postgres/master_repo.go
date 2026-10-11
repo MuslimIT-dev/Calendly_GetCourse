@@ -47,6 +47,17 @@ func (r *MasterRepo) GetByUserID(ctx context.Context, userID int32) (*domain.Mas
 	return mapMasterFullByUserID(row), nil
 }
 
+func (r *MasterRepo) GetUserIDByMasterID(ctx context.Context, masterID int32) (int32, error) {
+	userID, err := r.q.GetMasterUserID(ctx, masterID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return 0, domain.ErrMasterNotFound
+		}
+		return 0, err
+	}
+	return userID, nil
+}
+
 func (r *MasterRepo) Create(ctx context.Context, p *domain.MasterProfile) (*domain.MasterProfile, error) {
 	row, err := r.q.CreateMaster(ctx, db.CreateMasterParams{
 		UserID:              p.UserID,

@@ -23,7 +23,7 @@ FROM notifications n
 WHERE n.user_id = sqlc.arg('user_id')
   AND (sqlc.narg('status_filter')::smallint IS NULL OR n.status = sqlc.narg('status_filter'))
   AND (sqlc.narg('cursor_time')::timestamptz IS NULL
-       OR (n.created_at, n.id) < (sqlc.narg('cursor_time'), sqlc.narg('cursor_id')))
+       OR (n.created_at, n.id) < (sqlc.narg('cursor_time'), sqlc.narg('cursor_id')::bigint))
 ORDER BY n.created_at DESC, n.id DESC
 LIMIT sqlc.arg('page_size');
 

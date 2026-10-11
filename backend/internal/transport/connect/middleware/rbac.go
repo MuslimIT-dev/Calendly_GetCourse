@@ -79,6 +79,7 @@ var rolePermissions = map[string][]domain.Role{
 	"/notification.v1.NotificationService/GetUnreadCount":             {roleAdmin, roleMaster, roleClient},
 	"/notification.v1.NotificationService/GetNotificationSettings":    {roleAdmin, roleMaster, roleClient},
 	"/notification.v1.NotificationService/UpdateNotificationSettings": {roleAdmin, roleMaster, roleClient},
+	"/notification.v1.NotificationService/SendNotification":           {roleAdmin},
 }
 
 func NewRBACInterceptor() connect.UnaryInterceptorFunc {

@@ -32,24 +32,25 @@ func (kc *KafkaConsumer[T]) Start(ctx context.Context) error {
 	log.Printf("Starting Kafka consumer for topic: %s", kc.reader.Config().Topic)
 
 	for {
-		msg, err := kc.reader.ReadMessage(ctx)
+		msg, err := kc.reader.FetchMessage(ctx)
 		if err != nil {
 			if ctx.Err() != nil {
 				log.Printf("Kafka consumer stopped: %v", ctx.Err())
 				return nil
 			}
-			log.Printf("Error reading message: %v", err)
-			continue
+			return err
 		}
 
 		var t T
 		if err := json.Unmarshal(msg.Value, &t); err != nil {
-			log.Printf("Error unmarshaling message: %v", err)
-			continue
+			return err
 		}
 
 		if err := kc.consumer.Consume(ctx, &t); err != nil {
-			log.Printf("Error consuming message: %v", err)
+			return err
+		}
+		if err := kc.reader.CommitMessages(ctx, msg); err != nil {
+			return err
 		}
 	}
 }

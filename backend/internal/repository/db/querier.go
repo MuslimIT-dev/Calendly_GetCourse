@@ -68,6 +68,7 @@ type Querier interface {
 	GetMasterCertificates(ctx context.Context, masterID int32) ([]GetMasterCertificatesRow, error)
 	GetMasterIDByUserID(ctx context.Context, userID int32) (int32, error)
 	GetMasterLanguages(ctx context.Context, masterID int32) ([]GetMasterLanguagesRow, error)
+	GetMasterUserID(ctx context.Context, id int32) (int32, error)
 	GetMyServices(ctx context.Context, masterID int32) ([]GetMyServicesRow, error)
 	GetNotificationByID(ctx context.Context, id int64) (Notification, error)
 	GetNotificationSettings(ctx context.Context, userID int32) (NotificationSetting, error)

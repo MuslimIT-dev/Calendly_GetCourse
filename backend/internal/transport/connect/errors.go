@@ -100,6 +100,8 @@ func mapDomainError(err error) error {
 		return connect.NewError(connect.CodeAlreadyExists, err)
 	case errors.Is(err, domain.ErrReviewNotAllowed):
 		return connect.NewError(connect.CodeFailedPrecondition, err)
+	case errors.Is(err, domain.ErrNotificationNotFound):
+		return connect.NewError(connect.CodeNotFound, err)
 	default:
 		return connect.NewError(connect.CodeInternal, err)
 	}

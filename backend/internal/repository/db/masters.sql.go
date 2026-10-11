@@ -292,6 +292,19 @@ func (q *Queries) GetMasterLanguages(ctx context.Context, masterID int32) ([]Get
 	return items, nil
 }
 
+const getMasterUserID = `-- name: GetMasterUserID :one
+SELECT user_id
+FROM masters
+WHERE id = $1
+`
+
+func (q *Queries) GetMasterUserID(ctx context.Context, id int32) (int32, error) {
+	row := q.db.QueryRow(ctx, getMasterUserID, id)
+	var user_id int32
+	err := row.Scan(&user_id)
+	return user_id, err
+}
+
 const insertMasterCertificates = `-- name: InsertMasterCertificates :exec
 INSERT INTO certificates (master_id, name, organization, year, file_url)
 SELECT

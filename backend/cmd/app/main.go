@@ -35,12 +35,14 @@ import (
 	catalogv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/catalog/v1/catalogv1connect"
 	locationv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/location/v1/locationv1connect"
 	masterv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/master/v1/masterv1connect"
+	notificationv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/notification/v1/notificationv1connect"
 	paymentv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/payment/v1/paymentv1connect"
 	reviewv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/review/v1/reviewv1connect"
 	schedulev1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/schedule/v1/schedulev1connect"
 	servicev1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/service/v1/servicev1connect"
 	userv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1/userv1connect"
 
+	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/infrastructure/notifier"
 	gateway "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/infrastructure/payment"
 	connecttransport "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/transport/connect"
 
@@ -49,6 +51,7 @@ import (
 	cataloguc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/catalog"
 	locationuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/location"
 	masteruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/master"
+	notificationuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/notification"
 	paymentuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/payment"
 	reviewuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/review"
 	scheduleuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/schedule"
@@ -108,6 +111,7 @@ func main() {
 	paymentRepo := postgres.NewPaymentRepo(queries)
 	catalogRepo := postgres.NewCatalogRepo(queries)
 	reviewRepo := postgres.NewReviewRepo(queries)
+	notificationRepo := postgres.NewNotificationRepo(queries)
 
 	paymentGateway := gateway.NewManualGateway()
 
@@ -358,6 +362,24 @@ func main() {
 	hideReviewUC := reviewuc.NewHideUseCase(reviewDeps)
 	summaryReviewUC := reviewuc.NewGetSummaryUseCase(reviewDeps)
 
+	notificationDeps := notificationuc.Deps{
+		Notifications: notificationRepo,
+		Users:         userRepo,
+	}
+	notifierRegistry := notificationuc.NewNotifierRegistry(
+		notifier.NewInAppNotifier(),
+		notifier.NewEmailNotifier(""),
+		notifier.NewTelegramNotifier(""),
+	)
+	sendNotificationUC := notificationuc.NewSendUseCase(notificationDeps, notifierRegistry)
+	listNotificationsUC := notificationuc.NewListMyUseCase(notificationDeps)
+	markNotificationReadUC := notificationuc.NewMarkReadUseCase(notificationDeps)
+	markAllNotificationsReadUC := notificationuc.NewMarkAllReadUseCase(notificationDeps)
+	deleteNotificationUC := notificationuc.NewDeleteUseCase(notificationDeps)
+	unreadNotificationCountUC := notificationuc.NewUnreadCountUseCase(notificationDeps)
+	getNotificationSettingsUC := notificationuc.NewGetSettingsUseCase(notificationDeps)
+	updateNotificationSettingsUC := notificationuc.NewUpdateSettingsUseCase(notificationDeps)
+
 	// INITIALIZE HANDLERS
 
 	authHandler := connecttransport.NewAuthHandler(
@@ -425,6 +447,11 @@ func main() {
 	reviewHandler := connecttransport.NewReviewHandler(
 		createReviewUC, getReviewUC, listTargetReviewsUC, listMyReviewsUC,
 		replyReviewUC, updateReviewUC, deleteReviewUC, hideReviewUC, summaryReviewUC,
+	)
+	notificationHandler := connecttransport.NewNotificationHandler(
+		listNotificationsUC, markNotificationReadUC, markAllNotificationsReadUC,
+		deleteNotificationUC, unreadNotificationCountUC, getNotificationSettingsUC,
+		updateNotificationSettingsUC, sendNotificationUC,
 	)
 
 	// INITIALIZE HTTP SERVER
@@ -531,6 +558,15 @@ func main() {
 		),
 	)
 	mux.Handle(reviewPath, reviewH)
+
+	notificationPath, notificationH := notificationv1connect.NewNotificationServiceHandler(
+		notificationHandler,
+		connect.WithInterceptors(
+			middleware.NewAuthInterceptor(tokenService),
+			middleware.NewRBACInterceptor(),
+		),
+	)
+	mux.Handle(notificationPath, notificationH)
 
 	srv := &http.Server{
 		Addr:    ":8080",

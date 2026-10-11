@@ -40,4 +40,5 @@ var (
 	ErrReviewNotFound            = errors.New("review not found")
 	ErrReviewAlreadyExists       = errors.New("review already exists for this reference")
 	ErrReviewNotAllowed          = errors.New("review not allowed")
+	ErrNotificationNotFound      = errors.New("notification not found")
 )
