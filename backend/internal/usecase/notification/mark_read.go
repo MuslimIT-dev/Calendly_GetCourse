@@ -32,10 +32,10 @@ func (uc *MarkReadUseCase) Execute(ctx context.Context, in MarkReadInput) (*Mark
 			}
 			return nil, fmt.Errorf("verify notification ownership: %w", err)
 		}
-		if notification.UserID != userID {
+		if notification == nil {
 			return nil, domain.ErrNotificationNotFound
 		}
-		if notification == nil {
+		if notification.UserID != userID {
 			return nil, domain.ErrNotificationNotFound
 		}
 		if notification.Status != domain.NotifStatusRead {
