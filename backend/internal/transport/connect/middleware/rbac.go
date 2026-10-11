@@ -24,14 +24,11 @@ var rolePermissions = map[string][]domain.Role{
 	"/catalog.v1.AdminCatalogService/UpdateDefaultService": {roleAdmin},
 	"/catalog.v1.AdminCatalogService/DeleteDefaultService": {roleAdmin},
 
-	"/payment.v1.PaymentService/ListAllPayments": {roleAdmin},
-	"/payment.v1.PaymentService/RefundPayment":   {roleAdmin},
-
 	"/review.v1.ReviewService/HideReview": {roleAdmin},
 
 	"/master.v1.MasterService/GetMyMasterProfile": {roleAdmin, roleMaster},
 	"/master.v1.MasterService/UpdateMaster":       {roleAdmin, roleMaster},
-	"/master.v1.MasterService/UpdateSlug":   	   {roleAdmin, roleMaster},
+	"/master.v1.MasterService/UpdateSlug":         {roleAdmin, roleMaster},
 
 	"/service.v1.ServiceService/GetMyServices": {roleAdmin, roleMaster},
 	"/service.v1.ServiceService/AddService":    {roleAdmin, roleMaster},
@@ -68,10 +65,12 @@ var rolePermissions = map[string][]domain.Role{
 	"/review.v1.ReviewService/ListMyReviews": {roleAdmin, roleClient},
 	"/review.v1.ReviewService/ReplyToReview": {roleAdmin, roleMaster},
 
-	"/payment.v1.PaymentService/CreatePayment":  {roleAdmin, roleClient},
-	"/payment.v1.PaymentService/GetPayment":     {roleAdmin, roleClient},
-	"/payment.v1.PaymentService/ListMyPayments": {roleAdmin, roleClient},
-	"/payment.v1.PaymentService/CancelPayment":  {roleAdmin, roleClient},
+	"/payment.v1.PaymentService/CreatePayment":   {roleAdmin, roleClient},
+	"/payment.v1.PaymentService/GetPayment":      {roleAdmin, roleClient},
+	"/payment.v1.PaymentService/ListMyPayments":  {roleAdmin, roleClient},
+	"/payment.v1.PaymentService/ListAllPayments": {roleAdmin},
+	"/payment.v1.PaymentService/RefundPayment":   {roleAdmin},
+	"/payment.v1.PaymentService/CancelPayment":   {roleAdmin, roleClient},
 
 	"/notification.v1.NotificationService/ListMyNotifications":        {roleAdmin, roleMaster, roleClient},
 	"/notification.v1.NotificationService/MarkAsRead":                 {roleAdmin, roleMaster, roleClient},

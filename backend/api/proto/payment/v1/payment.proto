@@ -73,6 +73,7 @@ message CreatePaymentRequest {
     PaymentProvider provider     = 2;
     string          reference_id = 3;  // booking_id или course_id
     string          return_url   = 4;  // куда вернуть после оплаты
+    google.type.Money amount      = 5;
 }
 
 message CreatePaymentResponse {

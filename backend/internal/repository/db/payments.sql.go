@@ -400,7 +400,7 @@ WHERE ($1::smallint   IS NULL OR p.status = $1)
   AND ($3::timestamptz    IS NULL OR p.created_at >= $3)
   AND ($4::timestamptz      IS NULL OR p.created_at <  $4)
   AND ($5::timestamptz  IS NULL
-       OR (p.created_at, p.id) < ($5, $6))
+       OR (p.created_at, p.id) < ($5, $6::bigint))
 ORDER BY p.created_at DESC, p.id DESC
 LIMIT $7
 `
@@ -411,7 +411,7 @@ type ListAllPaymentsParams struct {
 	FromTime     pgtype.Timestamptz `json:"from_time"`
 	ToTime       pgtype.Timestamptz `json:"to_time"`
 	CursorTime   pgtype.Timestamptz `json:"cursor_time"`
-	CursorID     pgtype.Timestamptz `json:"cursor_id"`
+	CursorID     pgtype.Int8        `json:"cursor_id"`
 	PageSize     int32              `json:"page_size"`
 }
 
@@ -504,7 +504,7 @@ WHERE p.user_id = $1
   AND ($2::smallint  IS NULL OR p.status  = $2)
   AND ($3::smallint IS NULL OR p.purpose = $3)
   AND ($4::timestamptz IS NULL
-       OR (p.created_at, p.id) < ($4, $5))
+       OR (p.created_at, p.id) < ($4, $5::bigint))
 ORDER BY p.created_at DESC, p.id DESC
 LIMIT $6
 `
@@ -514,7 +514,7 @@ type ListMyPaymentsParams struct {
 	StatusFilter  pgtype.Int2        `json:"status_filter"`
 	PurposeFilter pgtype.Int2        `json:"purpose_filter"`
 	CursorTime    pgtype.Timestamptz `json:"cursor_time"`
-	CursorID      pgtype.Timestamptz `json:"cursor_id"`
+	CursorID      pgtype.Int8        `json:"cursor_id"`
 	PageSize      int32              `json:"page_size"`
 }
 
@@ -750,6 +750,44 @@ func (q *Queries) PaymentStatusByID(ctx context.Context, id int64) (int16, error
 	var status int16
 	err := row.Scan(&status)
 	return status, err
+}
+
+const setPaymentExternal = `-- name: SetPaymentExternal :one
+UPDATE payments
+SET external_id = $2, payment_url = $3, updated_at = NOW()
+WHERE id = $1
+RETURNING id, user_id, amount, currency, status, provider, purpose, reference_id, external_id, payment_url, failure_reason, receipt_url, paid_at, refunded_at, expires_at, created_at, updated_at
+`
+
+type SetPaymentExternalParams struct {
+	ID         int64       `json:"id"`
+	ExternalID pgtype.Text `json:"external_id"`
+	PaymentUrl pgtype.Text `json:"payment_url"`
+}
+
+func (q *Queries) SetPaymentExternal(ctx context.Context, arg SetPaymentExternalParams) (Payment, error) {
+	row := q.db.QueryRow(ctx, setPaymentExternal, arg.ID, arg.ExternalID, arg.PaymentUrl)
+	var i Payment
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Amount,
+		&i.Currency,
+		&i.Status,
+		&i.Provider,
+		&i.Purpose,
+		&i.ReferenceID,
+		&i.ExternalID,
+		&i.PaymentUrl,
+		&i.FailureReason,
+		&i.ReceiptUrl,
+		&i.PaidAt,
+		&i.RefundedAt,
+		&i.ExpiresAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const updatePaymentStatus = `-- name: UpdatePaymentStatus :one

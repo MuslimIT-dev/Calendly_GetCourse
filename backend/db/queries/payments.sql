@@ -74,7 +74,7 @@ WHERE p.user_id = sqlc.arg('user_id')
   AND (sqlc.narg('status_filter')::smallint  IS NULL OR p.status  = sqlc.narg('status_filter'))
   AND (sqlc.narg('purpose_filter')::smallint IS NULL OR p.purpose = sqlc.narg('purpose_filter'))
   AND (sqlc.narg('cursor_time')::timestamptz IS NULL
-       OR (p.created_at, p.id) < (sqlc.narg('cursor_time'), sqlc.narg('cursor_id')))
+       OR (p.created_at, p.id) < (sqlc.narg('cursor_time'), sqlc.narg('cursor_id')::bigint))
 ORDER BY p.created_at DESC, p.id DESC
 LIMIT sqlc.arg('page_size');
 
@@ -96,7 +96,7 @@ WHERE (sqlc.narg('status_filter')::smallint   IS NULL OR p.status = sqlc.narg('s
   AND (sqlc.narg('from_time')::timestamptz    IS NULL OR p.created_at >= sqlc.narg('from_time'))
   AND (sqlc.narg('to_time')::timestamptz      IS NULL OR p.created_at <  sqlc.narg('to_time'))
   AND (sqlc.narg('cursor_time')::timestamptz  IS NULL
-       OR (p.created_at, p.id) < (sqlc.narg('cursor_time'), sqlc.narg('cursor_id')))
+       OR (p.created_at, p.id) < (sqlc.narg('cursor_time'), sqlc.narg('cursor_id')::bigint))
 ORDER BY p.created_at DESC, p.id DESC
 LIMIT sqlc.arg('page_size');
 
@@ -186,3 +186,9 @@ WHERE purpose = $1
   AND status = 2
 ORDER BY paid_at DESC
 LIMIT 1;
+
+-- name: SetPaymentExternal :one
+UPDATE payments
+SET external_id = $2, payment_url = $3, updated_at = NOW()
+WHERE id = $1
+RETURNING *;

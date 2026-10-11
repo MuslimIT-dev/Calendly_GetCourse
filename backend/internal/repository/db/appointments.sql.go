@@ -11,86 +11,54 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const appointmentBelongsToClient = `-- name: AppointmentBelongsToClient :one
-SELECT EXISTS(
-    SELECT 1 FROM appointments WHERE id = $1 AND client_id = $2
-) AS belongs
-`
-
-type AppointmentBelongsToClientParams struct {
-	ID       int64 `json:"id"`
-	ClientID int32 `json:"client_id"`
-}
-
-func (q *Queries) AppointmentBelongsToClient(ctx context.Context, arg AppointmentBelongsToClientParams) (bool, error) {
-	row := q.db.QueryRow(ctx, appointmentBelongsToClient, arg.ID, arg.ClientID)
-	var belongs bool
-	err := row.Scan(&belongs)
-	return belongs, err
-}
-
-const appointmentBelongsToMaster = `-- name: AppointmentBelongsToMaster :one
-SELECT EXISTS(
-    SELECT 1 FROM appointments WHERE id = $1 AND master_id = $2
-) AS belongs
-`
-
-type AppointmentBelongsToMasterParams struct {
-	ID       int64 `json:"id"`
-	MasterID int32 `json:"master_id"`
-}
-
-func (q *Queries) AppointmentBelongsToMaster(ctx context.Context, arg AppointmentBelongsToMasterParams) (bool, error) {
-	row := q.db.QueryRow(ctx, appointmentBelongsToMaster, arg.ID, arg.MasterID)
-	var belongs bool
-	err := row.Scan(&belongs)
-	return belongs, err
-}
-
 const cancelAppointment = `-- name: CancelAppointment :one
 UPDATE appointments
-SET status        = $2,
-    cancelled_at  = NOW(),
-    cancelled_by  = $3,
-    cancel_reason = $4,
-    updated_at    = NOW()
-WHERE id = $1
-RETURNING id, client_id, master_id, service_id, location_id,
+SET status            = $2,
+    cancelled_at      = NOW(),
+    cancelled_by      = $3,
+    cancelled_by_role = $4,
+    cancel_reason     = $5,
+    updated_at        = NOW()
+WHERE id = $1 AND status IN (1, 2)
+RETURNING id, client_id, created_by, master_id, service_id, location_id,
           start_time, end_time, timezone, status, price, currency, payment_status,
           is_online, meeting_url, client_notes, master_notes,
-          cancelled_at, cancelled_by, cancel_reason,
+          cancelled_at, cancelled_by, cancelled_by_role, cancel_reason,
           created_at, updated_at
 `
 
 type CancelAppointmentParams struct {
-	ID           int64       `json:"id"`
-	Status       int16       `json:"status"`
-	CancelledBy  pgtype.Int4 `json:"cancelled_by"`
-	CancelReason pgtype.Text `json:"cancel_reason"`
+	ID              int64       `json:"id"`
+	Status          int16       `json:"status"`
+	CancelledBy     pgtype.Int4 `json:"cancelled_by"`
+	CancelledByRole pgtype.Int2 `json:"cancelled_by_role"`
+	CancelReason    pgtype.Text `json:"cancel_reason"`
 }
 
 type CancelAppointmentRow struct {
-	ID            int64              `json:"id"`
-	ClientID      int32              `json:"client_id"`
-	MasterID      int32              `json:"master_id"`
-	ServiceID     int32              `json:"service_id"`
-	LocationID    int32              `json:"location_id"`
-	StartTime     pgtype.Timestamptz `json:"start_time"`
-	EndTime       pgtype.Timestamptz `json:"end_time"`
-	Timezone      string             `json:"timezone"`
-	Status        int16              `json:"status"`
-	Price         int32              `json:"price"`
-	Currency      string             `json:"currency"`
-	PaymentStatus int16              `json:"payment_status"`
-	IsOnline      bool               `json:"is_online"`
-	MeetingUrl    pgtype.Text        `json:"meeting_url"`
-	ClientNotes   pgtype.Text        `json:"client_notes"`
-	MasterNotes   pgtype.Text        `json:"master_notes"`
-	CancelledAt   pgtype.Timestamptz `json:"cancelled_at"`
-	CancelledBy   pgtype.Int4        `json:"cancelled_by"`
-	CancelReason  pgtype.Text        `json:"cancel_reason"`
-	CreatedAt     pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
+	ID              int64              `json:"id"`
+	ClientID        int32              `json:"client_id"`
+	CreatedBy       pgtype.Int4        `json:"created_by"`
+	MasterID        int32              `json:"master_id"`
+	ServiceID       int32              `json:"service_id"`
+	LocationID      int32              `json:"location_id"`
+	StartTime       pgtype.Timestamptz `json:"start_time"`
+	EndTime         pgtype.Timestamptz `json:"end_time"`
+	Timezone        string             `json:"timezone"`
+	Status          int16              `json:"status"`
+	Price           int32              `json:"price"`
+	Currency        string             `json:"currency"`
+	PaymentStatus   int16              `json:"payment_status"`
+	IsOnline        bool               `json:"is_online"`
+	MeetingUrl      pgtype.Text        `json:"meeting_url"`
+	ClientNotes     pgtype.Text        `json:"client_notes"`
+	MasterNotes     pgtype.Text        `json:"master_notes"`
+	CancelledAt     pgtype.Timestamptz `json:"cancelled_at"`
+	CancelledBy     pgtype.Int4        `json:"cancelled_by"`
+	CancelledByRole pgtype.Int2        `json:"cancelled_by_role"`
+	CancelReason    pgtype.Text        `json:"cancel_reason"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) CancelAppointment(ctx context.Context, arg CancelAppointmentParams) (CancelAppointmentRow, error) {
@@ -98,12 +66,14 @@ func (q *Queries) CancelAppointment(ctx context.Context, arg CancelAppointmentPa
 		arg.ID,
 		arg.Status,
 		arg.CancelledBy,
+		arg.CancelledByRole,
 		arg.CancelReason,
 	)
 	var i CancelAppointmentRow
 	err := row.Scan(
 		&i.ID,
 		&i.ClientID,
+		&i.CreatedBy,
 		&i.MasterID,
 		&i.ServiceID,
 		&i.LocationID,
@@ -120,6 +90,7 @@ func (q *Queries) CancelAppointment(ctx context.Context, arg CancelAppointmentPa
 		&i.MasterNotes,
 		&i.CancelledAt,
 		&i.CancelledBy,
+		&i.CancelledByRole,
 		&i.CancelReason,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -131,10 +102,10 @@ const completeAppointment = `-- name: CompleteAppointment :one
 UPDATE appointments
 SET status = 5, master_notes = $2, updated_at = NOW()
 WHERE id = $1 AND status IN (1, 2)
-RETURNING id, client_id, master_id, service_id, location_id,
+RETURNING id, client_id, created_by, master_id, service_id, location_id,
           start_time, end_time, timezone, status, price, currency, payment_status,
           is_online, meeting_url, client_notes, master_notes,
-          cancelled_at, cancelled_by, cancel_reason,
+          cancelled_at, cancelled_by, cancelled_by_role, cancel_reason,
           created_at, updated_at
 `
 
@@ -144,27 +115,29 @@ type CompleteAppointmentParams struct {
 }
 
 type CompleteAppointmentRow struct {
-	ID            int64              `json:"id"`
-	ClientID      int32              `json:"client_id"`
-	MasterID      int32              `json:"master_id"`
-	ServiceID     int32              `json:"service_id"`
-	LocationID    int32              `json:"location_id"`
-	StartTime     pgtype.Timestamptz `json:"start_time"`
-	EndTime       pgtype.Timestamptz `json:"end_time"`
-	Timezone      string             `json:"timezone"`
-	Status        int16              `json:"status"`
-	Price         int32              `json:"price"`
-	Currency      string             `json:"currency"`
-	PaymentStatus int16              `json:"payment_status"`
-	IsOnline      bool               `json:"is_online"`
-	MeetingUrl    pgtype.Text        `json:"meeting_url"`
-	ClientNotes   pgtype.Text        `json:"client_notes"`
-	MasterNotes   pgtype.Text        `json:"master_notes"`
-	CancelledAt   pgtype.Timestamptz `json:"cancelled_at"`
-	CancelledBy   pgtype.Int4        `json:"cancelled_by"`
-	CancelReason  pgtype.Text        `json:"cancel_reason"`
-	CreatedAt     pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
+	ID              int64              `json:"id"`
+	ClientID        int32              `json:"client_id"`
+	CreatedBy       pgtype.Int4        `json:"created_by"`
+	MasterID        int32              `json:"master_id"`
+	ServiceID       int32              `json:"service_id"`
+	LocationID      int32              `json:"location_id"`
+	StartTime       pgtype.Timestamptz `json:"start_time"`
+	EndTime         pgtype.Timestamptz `json:"end_time"`
+	Timezone        string             `json:"timezone"`
+	Status          int16              `json:"status"`
+	Price           int32              `json:"price"`
+	Currency        string             `json:"currency"`
+	PaymentStatus   int16              `json:"payment_status"`
+	IsOnline        bool               `json:"is_online"`
+	MeetingUrl      pgtype.Text        `json:"meeting_url"`
+	ClientNotes     pgtype.Text        `json:"client_notes"`
+	MasterNotes     pgtype.Text        `json:"master_notes"`
+	CancelledAt     pgtype.Timestamptz `json:"cancelled_at"`
+	CancelledBy     pgtype.Int4        `json:"cancelled_by"`
+	CancelledByRole pgtype.Int2        `json:"cancelled_by_role"`
+	CancelReason    pgtype.Text        `json:"cancel_reason"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) CompleteAppointment(ctx context.Context, arg CompleteAppointmentParams) (CompleteAppointmentRow, error) {
@@ -173,6 +146,7 @@ func (q *Queries) CompleteAppointment(ctx context.Context, arg CompleteAppointme
 	err := row.Scan(
 		&i.ID,
 		&i.ClientID,
+		&i.CreatedBy,
 		&i.MasterID,
 		&i.ServiceID,
 		&i.LocationID,
@@ -189,6 +163,7 @@ func (q *Queries) CompleteAppointment(ctx context.Context, arg CompleteAppointme
 		&i.MasterNotes,
 		&i.CancelledAt,
 		&i.CancelledBy,
+		&i.CancelledByRole,
 		&i.CancelReason,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -200,35 +175,37 @@ const confirmAppointment = `-- name: ConfirmAppointment :one
 UPDATE appointments
 SET status = 2, updated_at = NOW()
 WHERE id = $1 AND status = 1
-RETURNING id, client_id, master_id, service_id, location_id,
+RETURNING id, client_id, created_by, master_id, service_id, location_id,
           start_time, end_time, timezone, status, price, currency, payment_status,
           is_online, meeting_url, client_notes, master_notes,
-          cancelled_at, cancelled_by, cancel_reason,
+          cancelled_at, cancelled_by, cancelled_by_role, cancel_reason,
           created_at, updated_at
 `
 
 type ConfirmAppointmentRow struct {
-	ID            int64              `json:"id"`
-	ClientID      int32              `json:"client_id"`
-	MasterID      int32              `json:"master_id"`
-	ServiceID     int32              `json:"service_id"`
-	LocationID    int32              `json:"location_id"`
-	StartTime     pgtype.Timestamptz `json:"start_time"`
-	EndTime       pgtype.Timestamptz `json:"end_time"`
-	Timezone      string             `json:"timezone"`
-	Status        int16              `json:"status"`
-	Price         int32              `json:"price"`
-	Currency      string             `json:"currency"`
-	PaymentStatus int16              `json:"payment_status"`
-	IsOnline      bool               `json:"is_online"`
-	MeetingUrl    pgtype.Text        `json:"meeting_url"`
-	ClientNotes   pgtype.Text        `json:"client_notes"`
-	MasterNotes   pgtype.Text        `json:"master_notes"`
-	CancelledAt   pgtype.Timestamptz `json:"cancelled_at"`
-	CancelledBy   pgtype.Int4        `json:"cancelled_by"`
-	CancelReason  pgtype.Text        `json:"cancel_reason"`
-	CreatedAt     pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
+	ID              int64              `json:"id"`
+	ClientID        int32              `json:"client_id"`
+	CreatedBy       pgtype.Int4        `json:"created_by"`
+	MasterID        int32              `json:"master_id"`
+	ServiceID       int32              `json:"service_id"`
+	LocationID      int32              `json:"location_id"`
+	StartTime       pgtype.Timestamptz `json:"start_time"`
+	EndTime         pgtype.Timestamptz `json:"end_time"`
+	Timezone        string             `json:"timezone"`
+	Status          int16              `json:"status"`
+	Price           int32              `json:"price"`
+	Currency        string             `json:"currency"`
+	PaymentStatus   int16              `json:"payment_status"`
+	IsOnline        bool               `json:"is_online"`
+	MeetingUrl      pgtype.Text        `json:"meeting_url"`
+	ClientNotes     pgtype.Text        `json:"client_notes"`
+	MasterNotes     pgtype.Text        `json:"master_notes"`
+	CancelledAt     pgtype.Timestamptz `json:"cancelled_at"`
+	CancelledBy     pgtype.Int4        `json:"cancelled_by"`
+	CancelledByRole pgtype.Int2        `json:"cancelled_by_role"`
+	CancelReason    pgtype.Text        `json:"cancel_reason"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) ConfirmAppointment(ctx context.Context, id int64) (ConfirmAppointmentRow, error) {
@@ -237,6 +214,7 @@ func (q *Queries) ConfirmAppointment(ctx context.Context, id int64) (ConfirmAppo
 	err := row.Scan(
 		&i.ID,
 		&i.ClientID,
+		&i.CreatedBy,
 		&i.MasterID,
 		&i.ServiceID,
 		&i.LocationID,
@@ -253,6 +231,7 @@ func (q *Queries) ConfirmAppointment(ctx context.Context, id int64) (ConfirmAppo
 		&i.MasterNotes,
 		&i.CancelledAt,
 		&i.CancelledBy,
+		&i.CancelledByRole,
 		&i.CancelReason,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -273,56 +252,55 @@ VALUES (
     $6, $7, $8,
     $9, $10,
     $11, $12,
-    $13, $14, $15
+    $13, 1, 1
 )
 RETURNING id, client_id, created_by, master_id, service_id, location_id,
           start_time, end_time, timezone, status, price, currency, payment_status,
           is_online, meeting_url, client_notes, master_notes,
-          cancelled_at, cancelled_by, cancel_reason,
+          cancelled_at, cancelled_by, cancelled_by_role, cancel_reason,
           created_at, updated_at
 `
 
 type CreateAppointmentParams struct {
-	ClientID      int32              `json:"client_id"`
-	CreatedBy     pgtype.Int4        `json:"created_by"`
-	MasterID      int32              `json:"master_id"`
-	ServiceID     int32              `json:"service_id"`
-	LocationID    int32              `json:"location_id"`
-	StartTime     pgtype.Timestamptz `json:"start_time"`
-	EndTime       pgtype.Timestamptz `json:"end_time"`
-	Timezone      string             `json:"timezone"`
-	Price         int32              `json:"price"`
-	Currency      string             `json:"currency"`
-	IsOnline      bool               `json:"is_online"`
-	MeetingUrl    pgtype.Text        `json:"meeting_url"`
-	ClientNotes   pgtype.Text        `json:"client_notes"`
-	Status        int16              `json:"status"`
-	PaymentStatus int16              `json:"payment_status"`
+	ClientID    int32              `json:"client_id"`
+	CreatedBy   pgtype.Int4        `json:"created_by"`
+	MasterID    int32              `json:"master_id"`
+	ServiceID   int32              `json:"service_id"`
+	LocationID  int32              `json:"location_id"`
+	StartTime   pgtype.Timestamptz `json:"start_time"`
+	EndTime     pgtype.Timestamptz `json:"end_time"`
+	Timezone    string             `json:"timezone"`
+	Price       int32              `json:"price"`
+	Currency    string             `json:"currency"`
+	IsOnline    bool               `json:"is_online"`
+	MeetingUrl  pgtype.Text        `json:"meeting_url"`
+	ClientNotes pgtype.Text        `json:"client_notes"`
 }
 
 type CreateAppointmentRow struct {
-	ID            int64              `json:"id"`
-	ClientID      int32              `json:"client_id"`
-	CreatedBy     pgtype.Int4        `json:"created_by"`
-	MasterID      int32              `json:"master_id"`
-	ServiceID     int32              `json:"service_id"`
-	LocationID    int32              `json:"location_id"`
-	StartTime     pgtype.Timestamptz `json:"start_time"`
-	EndTime       pgtype.Timestamptz `json:"end_time"`
-	Timezone      string             `json:"timezone"`
-	Status        int16              `json:"status"`
-	Price         int32              `json:"price"`
-	Currency      string             `json:"currency"`
-	PaymentStatus int16              `json:"payment_status"`
-	IsOnline      bool               `json:"is_online"`
-	MeetingUrl    pgtype.Text        `json:"meeting_url"`
-	ClientNotes   pgtype.Text        `json:"client_notes"`
-	MasterNotes   pgtype.Text        `json:"master_notes"`
-	CancelledAt   pgtype.Timestamptz `json:"cancelled_at"`
-	CancelledBy   pgtype.Int4        `json:"cancelled_by"`
-	CancelReason  pgtype.Text        `json:"cancel_reason"`
-	CreatedAt     pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
+	ID              int64              `json:"id"`
+	ClientID        int32              `json:"client_id"`
+	CreatedBy       pgtype.Int4        `json:"created_by"`
+	MasterID        int32              `json:"master_id"`
+	ServiceID       int32              `json:"service_id"`
+	LocationID      int32              `json:"location_id"`
+	StartTime       pgtype.Timestamptz `json:"start_time"`
+	EndTime         pgtype.Timestamptz `json:"end_time"`
+	Timezone        string             `json:"timezone"`
+	Status          int16              `json:"status"`
+	Price           int32              `json:"price"`
+	Currency        string             `json:"currency"`
+	PaymentStatus   int16              `json:"payment_status"`
+	IsOnline        bool               `json:"is_online"`
+	MeetingUrl      pgtype.Text        `json:"meeting_url"`
+	ClientNotes     pgtype.Text        `json:"client_notes"`
+	MasterNotes     pgtype.Text        `json:"master_notes"`
+	CancelledAt     pgtype.Timestamptz `json:"cancelled_at"`
+	CancelledBy     pgtype.Int4        `json:"cancelled_by"`
+	CancelledByRole pgtype.Int2        `json:"cancelled_by_role"`
+	CancelReason    pgtype.Text        `json:"cancel_reason"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) CreateAppointment(ctx context.Context, arg CreateAppointmentParams) (CreateAppointmentRow, error) {
@@ -340,8 +318,6 @@ func (q *Queries) CreateAppointment(ctx context.Context, arg CreateAppointmentPa
 		arg.IsOnline,
 		arg.MeetingUrl,
 		arg.ClientNotes,
-		arg.Status,
-		arg.PaymentStatus,
 	)
 	var i CreateAppointmentRow
 	err := row.Scan(
@@ -364,6 +340,7 @@ func (q *Queries) CreateAppointment(ctx context.Context, arg CreateAppointmentPa
 		&i.MasterNotes,
 		&i.CancelledAt,
 		&i.CancelledBy,
+		&i.CancelledByRole,
 		&i.CancelReason,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -376,15 +353,14 @@ SELECT
     a.id, a.client_id, a.created_by, a.master_id, a.service_id, a.location_id,
     a.start_time, a.end_time, a.timezone, a.status, a.price, a.currency, a.payment_status,
     a.is_online, a.meeting_url, a.client_notes, a.master_notes,
-    a.cancelled_at, a.cancelled_by, a.cancel_reason,
+    a.cancelled_at, a.cancelled_by, a.cancelled_by_role, a.cancel_reason,
     a.created_at, a.updated_at,
-
-    m.slug           AS master_slug,
-    mu.name          AS master_name,
-    s.name           AS service_name,
-    s.slug           AS service_slug,
-    l.name           AS location_name,
-    l.address        AS location_address
+    m.slug      AS master_slug,
+    mu.name     AS master_name,
+    s.name      AS service_name,
+    s.slug      AS service_slug,
+    l.name      AS location_name,
+    l.address   AS location_address
 FROM appointments a
 JOIN masters   m  ON m.id = a.master_id
 JOIN users     mu ON mu.id = m.user_id
@@ -413,6 +389,7 @@ type GetAppointmentByIDRow struct {
 	MasterNotes     pgtype.Text        `json:"master_notes"`
 	CancelledAt     pgtype.Timestamptz `json:"cancelled_at"`
 	CancelledBy     pgtype.Int4        `json:"cancelled_by"`
+	CancelledByRole pgtype.Int2        `json:"cancelled_by_role"`
 	CancelReason    pgtype.Text        `json:"cancel_reason"`
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
@@ -447,6 +424,7 @@ func (q *Queries) GetAppointmentByID(ctx context.Context, id int64) (GetAppointm
 		&i.MasterNotes,
 		&i.CancelledAt,
 		&i.CancelledBy,
+		&i.CancelledByRole,
 		&i.CancelReason,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -460,150 +438,19 @@ func (q *Queries) GetAppointmentByID(ctx context.Context, id int64) (GetAppointm
 	return i, err
 }
 
-const listMasterAppointmentsByRange = `-- name: ListMasterAppointmentsByRange :many
+const listAppointmentsByClient = `-- name: ListAppointmentsByClient :many
 SELECT
     a.id, a.client_id, a.created_by, a.master_id, a.service_id, a.location_id,
     a.start_time, a.end_time, a.timezone, a.status, a.price, a.currency, a.payment_status,
     a.is_online, a.meeting_url, a.client_notes, a.master_notes,
-    a.cancelled_at, a.cancelled_by, a.cancel_reason,
+    a.cancelled_at, a.cancelled_by, a.cancelled_by_role, a.cancel_reason,
     a.created_at, a.updated_at,
-
-    m.slug           AS master_slug,
-    mu.name          AS master_name,
-    s.name           AS service_name,
-    s.slug           AS service_slug,
-    l.name           AS location_name,
-    l.address        AS location_address
-FROM appointments a
-JOIN masters   m  ON m.id = a.master_id
-JOIN users     mu ON mu.id = m.user_id
-JOIN services  s  ON s.id = a.service_id
-JOIN locations l  ON l.id = a.location_id
-WHERE a.master_id = $1
-  AND ($2::int IS NULL OR a.location_id = $2)
-  AND ($3::smallint IS NULL OR a.status = $3)
-  AND ($4::timestamptz IS NULL OR a.start_time >= $4)
-  AND ($5::timestamptz   IS NULL OR a.start_time <  $5)
-  AND ($6::timestamptz IS NULL
-       OR (a.start_time, a.id) < ($6, $7))
-ORDER BY a.start_time DESC, a.id DESC
-LIMIT $8
-`
-
-type ListMasterAppointmentsByRangeParams struct {
-	MasterID     int32              `json:"master_id"`
-	LocationID   pgtype.Int4        `json:"location_id"`
-	StatusFilter pgtype.Int2        `json:"status_filter"`
-	FromTime     pgtype.Timestamptz `json:"from_time"`
-	ToTime       pgtype.Timestamptz `json:"to_time"`
-	CursorTime   pgtype.Timestamptz `json:"cursor_time"`
-	CursorID     pgtype.Timestamptz `json:"cursor_id"`
-	PageSize     int32              `json:"page_size"`
-}
-
-type ListMasterAppointmentsByRangeRow struct {
-	ID              int64              `json:"id"`
-	ClientID        int32              `json:"client_id"`
-	CreatedBy       pgtype.Int4        `json:"created_by"`
-	MasterID        int32              `json:"master_id"`
-	ServiceID       int32              `json:"service_id"`
-	LocationID      int32              `json:"location_id"`
-	StartTime       pgtype.Timestamptz `json:"start_time"`
-	EndTime         pgtype.Timestamptz `json:"end_time"`
-	Timezone        string             `json:"timezone"`
-	Status          int16              `json:"status"`
-	Price           int32              `json:"price"`
-	Currency        string             `json:"currency"`
-	PaymentStatus   int16              `json:"payment_status"`
-	IsOnline        bool               `json:"is_online"`
-	MeetingUrl      pgtype.Text        `json:"meeting_url"`
-	ClientNotes     pgtype.Text        `json:"client_notes"`
-	MasterNotes     pgtype.Text        `json:"master_notes"`
-	CancelledAt     pgtype.Timestamptz `json:"cancelled_at"`
-	CancelledBy     pgtype.Int4        `json:"cancelled_by"`
-	CancelReason    pgtype.Text        `json:"cancel_reason"`
-	CreatedAt       pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
-	MasterSlug      string             `json:"master_slug"`
-	MasterName      pgtype.Text        `json:"master_name"`
-	ServiceName     string             `json:"service_name"`
-	ServiceSlug     string             `json:"service_slug"`
-	LocationName    string             `json:"location_name"`
-	LocationAddress string             `json:"location_address"`
-}
-
-func (q *Queries) ListMasterAppointmentsByRange(ctx context.Context, arg ListMasterAppointmentsByRangeParams) ([]ListMasterAppointmentsByRangeRow, error) {
-	rows, err := q.db.Query(ctx, listMasterAppointmentsByRange,
-		arg.MasterID,
-		arg.LocationID,
-		arg.StatusFilter,
-		arg.FromTime,
-		arg.ToTime,
-		arg.CursorTime,
-		arg.CursorID,
-		arg.PageSize,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []ListMasterAppointmentsByRangeRow
-	for rows.Next() {
-		var i ListMasterAppointmentsByRangeRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.ClientID,
-			&i.CreatedBy,
-			&i.MasterID,
-			&i.ServiceID,
-			&i.LocationID,
-			&i.StartTime,
-			&i.EndTime,
-			&i.Timezone,
-			&i.Status,
-			&i.Price,
-			&i.Currency,
-			&i.PaymentStatus,
-			&i.IsOnline,
-			&i.MeetingUrl,
-			&i.ClientNotes,
-			&i.MasterNotes,
-			&i.CancelledAt,
-			&i.CancelledBy,
-			&i.CancelReason,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.MasterSlug,
-			&i.MasterName,
-			&i.ServiceName,
-			&i.ServiceSlug,
-			&i.LocationName,
-			&i.LocationAddress,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listMyAppointmentsByStatus = `-- name: ListMyAppointmentsByStatus :many
-SELECT
-    a.id, a.client_id, a.created_by, a.master_id, a.service_id, a.location_id,
-    a.start_time, a.end_time, a.timezone, a.status, a.price, a.currency, a.payment_status,
-    a.is_online, a.meeting_url, a.client_notes, a.master_notes,
-    a.cancelled_at, a.cancelled_by, a.cancel_reason,
-    a.created_at, a.updated_at,
-
-    m.slug           AS master_slug,
-    mu.name          AS master_name,
-    s.name           AS service_name,
-    s.slug           AS service_slug,
-    l.name           AS location_name,
-    l.address        AS location_address
+    m.slug      AS master_slug,
+    mu.name     AS master_name,
+    s.name      AS service_name,
+    s.slug      AS service_slug,
+    l.name      AS location_name,
+    l.address   AS location_address
 FROM appointments a
 JOIN masters   m  ON m.id = a.master_id
 JOIN users     mu ON mu.id = m.user_id
@@ -612,20 +459,20 @@ JOIN locations l  ON l.id = a.location_id
 WHERE a.client_id = $1
   AND ($2::smallint IS NULL OR a.status = $2)
   AND ($3::timestamptz IS NULL
-       OR (a.start_time, a.id) < ($3, $4))
+       OR (a.start_time, a.id) < ($3, $4::bigint))
 ORDER BY a.start_time DESC, a.id DESC
 LIMIT $5
 `
 
-type ListMyAppointmentsByStatusParams struct {
+type ListAppointmentsByClientParams struct {
 	ClientID     int32              `json:"client_id"`
 	StatusFilter pgtype.Int2        `json:"status_filter"`
 	CursorTime   pgtype.Timestamptz `json:"cursor_time"`
-	CursorID     pgtype.Timestamptz `json:"cursor_id"`
-	PageSize     int32              `json:"page_size"`
+	CursorID     pgtype.Int8        `json:"cursor_id"`
+	Lim          int32              `json:"lim"`
 }
 
-type ListMyAppointmentsByStatusRow struct {
+type ListAppointmentsByClientRow struct {
 	ID              int64              `json:"id"`
 	ClientID        int32              `json:"client_id"`
 	CreatedBy       pgtype.Int4        `json:"created_by"`
@@ -645,6 +492,7 @@ type ListMyAppointmentsByStatusRow struct {
 	MasterNotes     pgtype.Text        `json:"master_notes"`
 	CancelledAt     pgtype.Timestamptz `json:"cancelled_at"`
 	CancelledBy     pgtype.Int4        `json:"cancelled_by"`
+	CancelledByRole pgtype.Int2        `json:"cancelled_by_role"`
 	CancelReason    pgtype.Text        `json:"cancel_reason"`
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
@@ -656,21 +504,21 @@ type ListMyAppointmentsByStatusRow struct {
 	LocationAddress string             `json:"location_address"`
 }
 
-func (q *Queries) ListMyAppointmentsByStatus(ctx context.Context, arg ListMyAppointmentsByStatusParams) ([]ListMyAppointmentsByStatusRow, error) {
-	rows, err := q.db.Query(ctx, listMyAppointmentsByStatus,
+func (q *Queries) ListAppointmentsByClient(ctx context.Context, arg ListAppointmentsByClientParams) ([]ListAppointmentsByClientRow, error) {
+	rows, err := q.db.Query(ctx, listAppointmentsByClient,
 		arg.ClientID,
 		arg.StatusFilter,
 		arg.CursorTime,
 		arg.CursorID,
-		arg.PageSize,
+		arg.Lim,
 	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListMyAppointmentsByStatusRow
+	var items []ListAppointmentsByClientRow
 	for rows.Next() {
-		var i ListMyAppointmentsByStatusRow
+		var i ListAppointmentsByClientRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.ClientID,
@@ -691,6 +539,7 @@ func (q *Queries) ListMyAppointmentsByStatus(ctx context.Context, arg ListMyAppo
 			&i.MasterNotes,
 			&i.CancelledAt,
 			&i.CancelledBy,
+			&i.CancelledByRole,
 			&i.CancelReason,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -711,38 +560,47 @@ func (q *Queries) ListMyAppointmentsByStatus(ctx context.Context, arg ListMyAppo
 	return items, nil
 }
 
-const listMyAppointmentsUpcoming = `-- name: ListMyAppointmentsUpcoming :many
+const listAppointmentsByMaster = `-- name: ListAppointmentsByMaster :many
 SELECT
     a.id, a.client_id, a.created_by, a.master_id, a.service_id, a.location_id,
     a.start_time, a.end_time, a.timezone, a.status, a.price, a.currency, a.payment_status,
     a.is_online, a.meeting_url, a.client_notes, a.master_notes,
-    a.cancelled_at, a.cancelled_by, a.cancel_reason,
+    a.cancelled_at, a.cancelled_by, a.cancelled_by_role, a.cancel_reason,
     a.created_at, a.updated_at,
-
-    m.slug           AS master_slug,
-    mu.name          AS master_name,
-    s.name           AS service_name,
-    s.slug           AS service_slug,
-    l.name           AS location_name,
-    l.address        AS location_address
+    m.slug      AS master_slug,
+    mu.name     AS master_name,
+    s.name      AS service_name,
+    s.slug      AS service_slug,
+    l.name      AS location_name,
+    l.address   AS location_address
 FROM appointments a
 JOIN masters   m  ON m.id = a.master_id
 JOIN users     mu ON mu.id = m.user_id
 JOIN services  s  ON s.id = a.service_id
 JOIN locations l  ON l.id = a.location_id
-WHERE a.client_id = $1
-  AND a.status IN (1, 2)
-  AND a.start_time >= NOW()
-ORDER BY a.start_time ASC
-LIMIT $2
+WHERE a.master_id = $1
+  AND ($2::int        IS NULL OR a.location_id = $2)
+  AND ($3::smallint IS NULL OR a.status = $3)
+  AND ($4::timestamptz  IS NULL OR a.start_time >= $4)
+  AND ($5::timestamptz    IS NULL OR a.start_time <  $5)
+  AND ($6::timestamptz IS NULL
+       OR (a.start_time, a.id) < ($6, $7::bigint))
+ORDER BY a.start_time DESC, a.id DESC
+LIMIT $8
 `
 
-type ListMyAppointmentsUpcomingParams struct {
-	ClientID int32 `json:"client_id"`
-	PageSize int32 `json:"page_size"`
+type ListAppointmentsByMasterParams struct {
+	MasterID     int32              `json:"master_id"`
+	LocationID   pgtype.Int4        `json:"location_id"`
+	StatusFilter pgtype.Int2        `json:"status_filter"`
+	FromTime     pgtype.Timestamptz `json:"from_time"`
+	ToTime       pgtype.Timestamptz `json:"to_time"`
+	CursorTime   pgtype.Timestamptz `json:"cursor_time"`
+	CursorID     pgtype.Int8        `json:"cursor_id"`
+	Lim          int32              `json:"lim"`
 }
 
-type ListMyAppointmentsUpcomingRow struct {
+type ListAppointmentsByMasterRow struct {
 	ID              int64              `json:"id"`
 	ClientID        int32              `json:"client_id"`
 	CreatedBy       pgtype.Int4        `json:"created_by"`
@@ -762,6 +620,7 @@ type ListMyAppointmentsUpcomingRow struct {
 	MasterNotes     pgtype.Text        `json:"master_notes"`
 	CancelledAt     pgtype.Timestamptz `json:"cancelled_at"`
 	CancelledBy     pgtype.Int4        `json:"cancelled_by"`
+	CancelledByRole pgtype.Int2        `json:"cancelled_by_role"`
 	CancelReason    pgtype.Text        `json:"cancel_reason"`
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
@@ -773,15 +632,24 @@ type ListMyAppointmentsUpcomingRow struct {
 	LocationAddress string             `json:"location_address"`
 }
 
-func (q *Queries) ListMyAppointmentsUpcoming(ctx context.Context, arg ListMyAppointmentsUpcomingParams) ([]ListMyAppointmentsUpcomingRow, error) {
-	rows, err := q.db.Query(ctx, listMyAppointmentsUpcoming, arg.ClientID, arg.PageSize)
+func (q *Queries) ListAppointmentsByMaster(ctx context.Context, arg ListAppointmentsByMasterParams) ([]ListAppointmentsByMasterRow, error) {
+	rows, err := q.db.Query(ctx, listAppointmentsByMaster,
+		arg.MasterID,
+		arg.LocationID,
+		arg.StatusFilter,
+		arg.FromTime,
+		arg.ToTime,
+		arg.CursorTime,
+		arg.CursorID,
+		arg.Lim,
+	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListMyAppointmentsUpcomingRow
+	var items []ListAppointmentsByMasterRow
 	for rows.Next() {
-		var i ListMyAppointmentsUpcomingRow
+		var i ListAppointmentsByMasterRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.ClientID,
@@ -802,6 +670,7 @@ func (q *Queries) ListMyAppointmentsUpcoming(ctx context.Context, arg ListMyAppo
 			&i.MasterNotes,
 			&i.CancelledAt,
 			&i.CancelledBy,
+			&i.CancelledByRole,
 			&i.CancelReason,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -826,35 +695,37 @@ const markAppointmentNoShow = `-- name: MarkAppointmentNoShow :one
 UPDATE appointments
 SET status = 6, updated_at = NOW()
 WHERE id = $1 AND status IN (1, 2)
-RETURNING id, client_id, master_id, service_id, location_id,
+RETURNING id, client_id, created_by, master_id, service_id, location_id,
           start_time, end_time, timezone, status, price, currency, payment_status,
           is_online, meeting_url, client_notes, master_notes,
-          cancelled_at, cancelled_by, cancel_reason,
+          cancelled_at, cancelled_by, cancelled_by_role, cancel_reason,
           created_at, updated_at
 `
 
 type MarkAppointmentNoShowRow struct {
-	ID            int64              `json:"id"`
-	ClientID      int32              `json:"client_id"`
-	MasterID      int32              `json:"master_id"`
-	ServiceID     int32              `json:"service_id"`
-	LocationID    int32              `json:"location_id"`
-	StartTime     pgtype.Timestamptz `json:"start_time"`
-	EndTime       pgtype.Timestamptz `json:"end_time"`
-	Timezone      string             `json:"timezone"`
-	Status        int16              `json:"status"`
-	Price         int32              `json:"price"`
-	Currency      string             `json:"currency"`
-	PaymentStatus int16              `json:"payment_status"`
-	IsOnline      bool               `json:"is_online"`
-	MeetingUrl    pgtype.Text        `json:"meeting_url"`
-	ClientNotes   pgtype.Text        `json:"client_notes"`
-	MasterNotes   pgtype.Text        `json:"master_notes"`
-	CancelledAt   pgtype.Timestamptz `json:"cancelled_at"`
-	CancelledBy   pgtype.Int4        `json:"cancelled_by"`
-	CancelReason  pgtype.Text        `json:"cancel_reason"`
-	CreatedAt     pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
+	ID              int64              `json:"id"`
+	ClientID        int32              `json:"client_id"`
+	CreatedBy       pgtype.Int4        `json:"created_by"`
+	MasterID        int32              `json:"master_id"`
+	ServiceID       int32              `json:"service_id"`
+	LocationID      int32              `json:"location_id"`
+	StartTime       pgtype.Timestamptz `json:"start_time"`
+	EndTime         pgtype.Timestamptz `json:"end_time"`
+	Timezone        string             `json:"timezone"`
+	Status          int16              `json:"status"`
+	Price           int32              `json:"price"`
+	Currency        string             `json:"currency"`
+	PaymentStatus   int16              `json:"payment_status"`
+	IsOnline        bool               `json:"is_online"`
+	MeetingUrl      pgtype.Text        `json:"meeting_url"`
+	ClientNotes     pgtype.Text        `json:"client_notes"`
+	MasterNotes     pgtype.Text        `json:"master_notes"`
+	CancelledAt     pgtype.Timestamptz `json:"cancelled_at"`
+	CancelledBy     pgtype.Int4        `json:"cancelled_by"`
+	CancelledByRole pgtype.Int2        `json:"cancelled_by_role"`
+	CancelReason    pgtype.Text        `json:"cancel_reason"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) MarkAppointmentNoShow(ctx context.Context, id int64) (MarkAppointmentNoShowRow, error) {
@@ -863,6 +734,7 @@ func (q *Queries) MarkAppointmentNoShow(ctx context.Context, id int64) (MarkAppo
 	err := row.Scan(
 		&i.ID,
 		&i.ClientID,
+		&i.CreatedBy,
 		&i.MasterID,
 		&i.ServiceID,
 		&i.LocationID,
@@ -879,6 +751,7 @@ func (q *Queries) MarkAppointmentNoShow(ctx context.Context, id int64) (MarkAppo
 		&i.MasterNotes,
 		&i.CancelledAt,
 		&i.CancelledBy,
+		&i.CancelledByRole,
 		&i.CancelReason,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -893,10 +766,10 @@ SET start_time  = $2,
     location_id = $4,
     updated_at  = NOW()
 WHERE id = $1 AND status IN (1, 2)
-RETURNING id, client_id, master_id, service_id, location_id,
+RETURNING id, client_id, created_by, master_id, service_id, location_id,
           start_time, end_time, timezone, status, price, currency, payment_status,
           is_online, meeting_url, client_notes, master_notes,
-          cancelled_at, cancelled_by, cancel_reason,
+          cancelled_at, cancelled_by, cancelled_by_role, cancel_reason,
           created_at, updated_at
 `
 
@@ -908,27 +781,29 @@ type RescheduleAppointmentParams struct {
 }
 
 type RescheduleAppointmentRow struct {
-	ID            int64              `json:"id"`
-	ClientID      int32              `json:"client_id"`
-	MasterID      int32              `json:"master_id"`
-	ServiceID     int32              `json:"service_id"`
-	LocationID    int32              `json:"location_id"`
-	StartTime     pgtype.Timestamptz `json:"start_time"`
-	EndTime       pgtype.Timestamptz `json:"end_time"`
-	Timezone      string             `json:"timezone"`
-	Status        int16              `json:"status"`
-	Price         int32              `json:"price"`
-	Currency      string             `json:"currency"`
-	PaymentStatus int16              `json:"payment_status"`
-	IsOnline      bool               `json:"is_online"`
-	MeetingUrl    pgtype.Text        `json:"meeting_url"`
-	ClientNotes   pgtype.Text        `json:"client_notes"`
-	MasterNotes   pgtype.Text        `json:"master_notes"`
-	CancelledAt   pgtype.Timestamptz `json:"cancelled_at"`
-	CancelledBy   pgtype.Int4        `json:"cancelled_by"`
-	CancelReason  pgtype.Text        `json:"cancel_reason"`
-	CreatedAt     pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
+	ID              int64              `json:"id"`
+	ClientID        int32              `json:"client_id"`
+	CreatedBy       pgtype.Int4        `json:"created_by"`
+	MasterID        int32              `json:"master_id"`
+	ServiceID       int32              `json:"service_id"`
+	LocationID      int32              `json:"location_id"`
+	StartTime       pgtype.Timestamptz `json:"start_time"`
+	EndTime         pgtype.Timestamptz `json:"end_time"`
+	Timezone        string             `json:"timezone"`
+	Status          int16              `json:"status"`
+	Price           int32              `json:"price"`
+	Currency        string             `json:"currency"`
+	PaymentStatus   int16              `json:"payment_status"`
+	IsOnline        bool               `json:"is_online"`
+	MeetingUrl      pgtype.Text        `json:"meeting_url"`
+	ClientNotes     pgtype.Text        `json:"client_notes"`
+	MasterNotes     pgtype.Text        `json:"master_notes"`
+	CancelledAt     pgtype.Timestamptz `json:"cancelled_at"`
+	CancelledBy     pgtype.Int4        `json:"cancelled_by"`
+	CancelledByRole pgtype.Int2        `json:"cancelled_by_role"`
+	CancelReason    pgtype.Text        `json:"cancel_reason"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
 }
 
 func (q *Queries) RescheduleAppointment(ctx context.Context, arg RescheduleAppointmentParams) (RescheduleAppointmentRow, error) {
@@ -942,6 +817,7 @@ func (q *Queries) RescheduleAppointment(ctx context.Context, arg RescheduleAppoi
 	err := row.Scan(
 		&i.ID,
 		&i.ClientID,
+		&i.CreatedBy,
 		&i.MasterID,
 		&i.ServiceID,
 		&i.LocationID,
@@ -958,6 +834,7 @@ func (q *Queries) RescheduleAppointment(ctx context.Context, arg RescheduleAppoi
 		&i.MasterNotes,
 		&i.CancelledAt,
 		&i.CancelledBy,
+		&i.CancelledByRole,
 		&i.CancelReason,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -979,29 +856,4 @@ type UpdateAppointmentPaymentStatusParams struct {
 func (q *Queries) UpdateAppointmentPaymentStatus(ctx context.Context, arg UpdateAppointmentPaymentStatusParams) error {
 	_, err := q.db.Exec(ctx, updateAppointmentPaymentStatus, arg.ID, arg.PaymentStatus)
 	return err
-}
-
-const updateAppointmentStatus = `-- name: UpdateAppointmentStatus :one
-UPDATE appointments
-SET status = $2, updated_at = NOW()
-WHERE id = $1
-RETURNING id, status, updated_at
-`
-
-type UpdateAppointmentStatusParams struct {
-	ID     int64 `json:"id"`
-	Status int16 `json:"status"`
-}
-
-type UpdateAppointmentStatusRow struct {
-	ID        int64              `json:"id"`
-	Status    int16              `json:"status"`
-	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
-}
-
-func (q *Queries) UpdateAppointmentStatus(ctx context.Context, arg UpdateAppointmentStatusParams) (UpdateAppointmentStatusRow, error) {
-	row := q.db.QueryRow(ctx, updateAppointmentStatus, arg.ID, arg.Status)
-	var i UpdateAppointmentStatusRow
-	err := row.Scan(&i.ID, &i.Status, &i.UpdatedAt)
-	return i, err
 }

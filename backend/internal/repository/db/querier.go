@@ -12,8 +12,6 @@ import (
 
 type Querier interface {
 	AddUserRoles(ctx context.Context, arg AddUserRolesParams) error
-	AppointmentBelongsToClient(ctx context.Context, arg AppointmentBelongsToClientParams) (bool, error)
-	AppointmentBelongsToMaster(ctx context.Context, arg AppointmentBelongsToMasterParams) (bool, error)
 	// ============================================================
 	// ROLES
 	// ============================================================
@@ -96,15 +94,14 @@ type Querier interface {
 	InsertServiceLocations(ctx context.Context, arg InsertServiceLocationsParams) error
 	IsTypeMuted(ctx context.Context, arg IsTypeMutedParams) (bool, error)
 	ListAllPayments(ctx context.Context, arg ListAllPaymentsParams) ([]ListAllPaymentsRow, error)
+	ListAppointmentsByClient(ctx context.Context, arg ListAppointmentsByClientParams) ([]ListAppointmentsByClientRow, error)
+	ListAppointmentsByMaster(ctx context.Context, arg ListAppointmentsByMasterParams) ([]ListAppointmentsByMasterRow, error)
 	ListCategories(ctx context.Context) ([]Category, error)
 	ListDefaultServices(ctx context.Context, categoryID pgtype.Int4) ([]DefaultService, error)
 	ListLocationsByMaster(ctx context.Context, arg ListLocationsByMasterParams) ([]Location, error)
-	ListMasterAppointmentsByRange(ctx context.Context, arg ListMasterAppointmentsByRangeParams) ([]ListMasterAppointmentsByRangeRow, error)
 	ListMastersByExperience(ctx context.Context, arg ListMastersByExperienceParams) ([]ListMastersByExperienceRow, error)
 	ListMastersByPrice(ctx context.Context, arg ListMastersByPriceParams) ([]ListMastersByPriceRow, error)
 	ListMastersByRating(ctx context.Context, arg ListMastersByRatingParams) ([]ListMastersByRatingRow, error)
-	ListMyAppointmentsByStatus(ctx context.Context, arg ListMyAppointmentsByStatusParams) ([]ListMyAppointmentsByStatusRow, error)
-	ListMyAppointmentsUpcoming(ctx context.Context, arg ListMyAppointmentsUpcomingParams) ([]ListMyAppointmentsUpcomingRow, error)
 	ListMyNotifications(ctx context.Context, arg ListMyNotificationsParams) ([]ListMyNotificationsRow, error)
 	ListMyPayments(ctx context.Context, arg ListMyPaymentsParams) ([]ListMyPaymentsRow, error)
 	ListMyReviews(ctx context.Context, arg ListMyReviewsParams) ([]ListMyReviewsRow, error)
@@ -134,10 +131,10 @@ type Querier interface {
 	ServiceSlugExists(ctx context.Context, arg ServiceSlugExistsParams) (bool, error)
 	SetDefaultLocation(ctx context.Context, arg SetDefaultLocationParams) error
 	SetEmailVerified(ctx context.Context, id int32) error
+	SetPaymentExternal(ctx context.Context, arg SetPaymentExternalParams) (Payment, error)
 	SetUserRoles(ctx context.Context, userID int32) error
 	UnhideReview(ctx context.Context, id int64) (Review, error)
 	UpdateAppointmentPaymentStatus(ctx context.Context, arg UpdateAppointmentPaymentStatusParams) error
-	UpdateAppointmentStatus(ctx context.Context, arg UpdateAppointmentStatusParams) (UpdateAppointmentStatusRow, error)
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
 	UpdateDefaultService(ctx context.Context, arg UpdateDefaultServiceParams) (DefaultService, error)
 	UpdateLocation(ctx context.Context, arg UpdateLocationParams) (Location, error)

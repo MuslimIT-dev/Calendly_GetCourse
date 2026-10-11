@@ -18,6 +18,22 @@ func parseID(value string) (int32, error) {
 	return int32(id), nil
 }
 
+func parseAppointmentID(value string) (int64, error) {
+	id, err := strconv.ParseInt(value, 10, 64)
+	if err != nil || id <= 0 {
+		return 0, fmt.Errorf("invalid ID %q", value)
+	}
+	return id, nil
+}
+
+func parsePaymentID(value string) (int64, error) {
+	id, err := strconv.ParseInt(value, 10, 64)
+	if err != nil || id <= 0 {
+		return 0, fmt.Errorf("invalid ID %q", value)
+	}
+	return id, nil
+}
+
 func mapDomainError(err error) error {
 	switch {
 	case errors.Is(err, domain.ErrEmailAlreadyTaken):
@@ -56,6 +72,22 @@ func mapDomainError(err error) error {
 		return connect.NewError(connect.CodeNotFound, err)
 	case errors.Is(err, domain.ErrServiceAlreadyAdded):
 		return connect.NewError(connect.CodeAlreadyExists, err)
+	case errors.Is(err, domain.ErrAppointmentNotFound):
+		return connect.NewError(connect.CodeNotFound, err)
+	case errors.Is(err, domain.ErrSlotTaken):
+		return connect.NewError(connect.CodeAlreadyExists, err)
+	case errors.Is(err, domain.ErrInvalidStatus):
+		return connect.NewError(connect.CodeFailedPrecondition, err)
+	case errors.Is(err, domain.ErrServiceNotForLocation):
+		return connect.NewError(connect.CodeFailedPrecondition, err)
+	case errors.Is(err, domain.ErrPaymentNotFound):
+		return connect.NewError(connect.CodeNotFound, err)
+	case errors.Is(err, domain.ErrPaymentAlreadyPaid):
+		return connect.NewError(connect.CodeAlreadyExists, err)
+	case errors.Is(err, domain.ErrPaymentInvalidStatus):
+		return connect.NewError(connect.CodeFailedPrecondition, err)
+	case errors.Is(err, domain.ErrPaymentSignatureBad):
+		return connect.NewError(connect.CodeUnauthenticated, err)
 	default:
 		return connect.NewError(connect.CodeInternal, err)
 	}

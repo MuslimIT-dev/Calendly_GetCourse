@@ -358,6 +358,7 @@ type CreatePaymentRequest struct {
 	Provider      PaymentProvider        `protobuf:"varint,2,opt,name=provider,proto3,enum=payment.v1.PaymentProvider" json:"provider,omitempty"`
 	ReferenceId   string                 `protobuf:"bytes,3,opt,name=reference_id,json=referenceId,proto3" json:"reference_id,omitempty"` // booking_id или course_id
 	ReturnUrl     string                 `protobuf:"bytes,4,opt,name=return_url,json=returnUrl,proto3" json:"return_url,omitempty"`       // куда вернуть после оплаты
+	Amount        *money.Money           `protobuf:"bytes,5,opt,name=amount,proto3" json:"amount,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -418,6 +419,13 @@ func (x *CreatePaymentRequest) GetReturnUrl() string {
 		return x.ReturnUrl
 	}
 	return ""
+}
+
+func (x *CreatePaymentRequest) GetAmount() *money.Money {
+	if x != nil {
+		return x.Amount
+	}
+	return nil
 }
 
 type CreatePaymentResponse struct {
@@ -1126,13 +1134,14 @@ const file_payment_v1_payment_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xc7\x01\n" +
+	"updated_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xf3\x01\n" +
 	"\x14CreatePaymentRequest\x124\n" +
 	"\apurpose\x18\x01 \x01(\x0e2\x1a.payment.v1.PaymentPurposeR\apurpose\x127\n" +
 	"\bprovider\x18\x02 \x01(\x0e2\x1b.payment.v1.PaymentProviderR\bprovider\x12!\n" +
 	"\freference_id\x18\x03 \x01(\tR\vreferenceId\x12\x1d\n" +
 	"\n" +
-	"return_url\x18\x04 \x01(\tR\treturnUrl\"F\n" +
+	"return_url\x18\x04 \x01(\tR\treturnUrl\x12*\n" +
+	"\x06amount\x18\x05 \x01(\v2\x12.google.type.MoneyR\x06amount\"F\n" +
 	"\x15CreatePaymentResponse\x12-\n" +
 	"\apayment\x18\x01 \x01(\v2\x13.payment.v1.PaymentR\apayment\"#\n" +
 	"\x11GetPaymentRequest\x12\x0e\n" +
@@ -1250,35 +1259,36 @@ var file_payment_v1_payment_proto_depIdxs = []int32{
 	19, // 8: payment.v1.Payment.updated_at:type_name -> google.protobuf.Timestamp
 	2,  // 9: payment.v1.CreatePaymentRequest.purpose:type_name -> payment.v1.PaymentPurpose
 	1,  // 10: payment.v1.CreatePaymentRequest.provider:type_name -> payment.v1.PaymentProvider
-	3,  // 11: payment.v1.CreatePaymentResponse.payment:type_name -> payment.v1.Payment
-	3,  // 12: payment.v1.GetPaymentResponse.payment:type_name -> payment.v1.Payment
-	0,  // 13: payment.v1.ListMyPaymentsRequest.status_filter:type_name -> payment.v1.PaymentStatus
-	2,  // 14: payment.v1.ListMyPaymentsRequest.purpose_filter:type_name -> payment.v1.PaymentPurpose
-	3,  // 15: payment.v1.ListMyPaymentsResponse.payments:type_name -> payment.v1.Payment
-	0,  // 16: payment.v1.ListAllPaymentsRequest.status_filter:type_name -> payment.v1.PaymentStatus
-	3,  // 17: payment.v1.ListAllPaymentsResponse.payments:type_name -> payment.v1.Payment
-	3,  // 18: payment.v1.RefundPaymentResponse.payment:type_name -> payment.v1.Payment
-	3,  // 19: payment.v1.CancelPaymentResponse.payment:type_name -> payment.v1.Payment
-	1,  // 20: payment.v1.PaymentWebhookRequest.provider:type_name -> payment.v1.PaymentProvider
-	4,  // 21: payment.v1.PaymentService.CreatePayment:input_type -> payment.v1.CreatePaymentRequest
-	6,  // 22: payment.v1.PaymentService.GetPayment:input_type -> payment.v1.GetPaymentRequest
-	8,  // 23: payment.v1.PaymentService.ListMyPayments:input_type -> payment.v1.ListMyPaymentsRequest
-	10, // 24: payment.v1.PaymentService.ListAllPayments:input_type -> payment.v1.ListAllPaymentsRequest
-	12, // 25: payment.v1.PaymentService.RefundPayment:input_type -> payment.v1.RefundPaymentRequest
-	14, // 26: payment.v1.PaymentService.CancelPayment:input_type -> payment.v1.CancelPaymentRequest
-	16, // 27: payment.v1.PaymentService.PaymentWebhook:input_type -> payment.v1.PaymentWebhookRequest
-	5,  // 28: payment.v1.PaymentService.CreatePayment:output_type -> payment.v1.CreatePaymentResponse
-	7,  // 29: payment.v1.PaymentService.GetPayment:output_type -> payment.v1.GetPaymentResponse
-	9,  // 30: payment.v1.PaymentService.ListMyPayments:output_type -> payment.v1.ListMyPaymentsResponse
-	11, // 31: payment.v1.PaymentService.ListAllPayments:output_type -> payment.v1.ListAllPaymentsResponse
-	13, // 32: payment.v1.PaymentService.RefundPayment:output_type -> payment.v1.RefundPaymentResponse
-	15, // 33: payment.v1.PaymentService.CancelPayment:output_type -> payment.v1.CancelPaymentResponse
-	17, // 34: payment.v1.PaymentService.PaymentWebhook:output_type -> payment.v1.PaymentWebhookResponse
-	28, // [28:35] is the sub-list for method output_type
-	21, // [21:28] is the sub-list for method input_type
-	21, // [21:21] is the sub-list for extension type_name
-	21, // [21:21] is the sub-list for extension extendee
-	0,  // [0:21] is the sub-list for field type_name
+	18, // 11: payment.v1.CreatePaymentRequest.amount:type_name -> google.type.Money
+	3,  // 12: payment.v1.CreatePaymentResponse.payment:type_name -> payment.v1.Payment
+	3,  // 13: payment.v1.GetPaymentResponse.payment:type_name -> payment.v1.Payment
+	0,  // 14: payment.v1.ListMyPaymentsRequest.status_filter:type_name -> payment.v1.PaymentStatus
+	2,  // 15: payment.v1.ListMyPaymentsRequest.purpose_filter:type_name -> payment.v1.PaymentPurpose
+	3,  // 16: payment.v1.ListMyPaymentsResponse.payments:type_name -> payment.v1.Payment
+	0,  // 17: payment.v1.ListAllPaymentsRequest.status_filter:type_name -> payment.v1.PaymentStatus
+	3,  // 18: payment.v1.ListAllPaymentsResponse.payments:type_name -> payment.v1.Payment
+	3,  // 19: payment.v1.RefundPaymentResponse.payment:type_name -> payment.v1.Payment
+	3,  // 20: payment.v1.CancelPaymentResponse.payment:type_name -> payment.v1.Payment
+	1,  // 21: payment.v1.PaymentWebhookRequest.provider:type_name -> payment.v1.PaymentProvider
+	4,  // 22: payment.v1.PaymentService.CreatePayment:input_type -> payment.v1.CreatePaymentRequest
+	6,  // 23: payment.v1.PaymentService.GetPayment:input_type -> payment.v1.GetPaymentRequest
+	8,  // 24: payment.v1.PaymentService.ListMyPayments:input_type -> payment.v1.ListMyPaymentsRequest
+	10, // 25: payment.v1.PaymentService.ListAllPayments:input_type -> payment.v1.ListAllPaymentsRequest
+	12, // 26: payment.v1.PaymentService.RefundPayment:input_type -> payment.v1.RefundPaymentRequest
+	14, // 27: payment.v1.PaymentService.CancelPayment:input_type -> payment.v1.CancelPaymentRequest
+	16, // 28: payment.v1.PaymentService.PaymentWebhook:input_type -> payment.v1.PaymentWebhookRequest
+	5,  // 29: payment.v1.PaymentService.CreatePayment:output_type -> payment.v1.CreatePaymentResponse
+	7,  // 30: payment.v1.PaymentService.GetPayment:output_type -> payment.v1.GetPaymentResponse
+	9,  // 31: payment.v1.PaymentService.ListMyPayments:output_type -> payment.v1.ListMyPaymentsResponse
+	11, // 32: payment.v1.PaymentService.ListAllPayments:output_type -> payment.v1.ListAllPaymentsResponse
+	13, // 33: payment.v1.PaymentService.RefundPayment:output_type -> payment.v1.RefundPaymentResponse
+	15, // 34: payment.v1.PaymentService.CancelPayment:output_type -> payment.v1.CancelPaymentResponse
+	17, // 35: payment.v1.PaymentService.PaymentWebhook:output_type -> payment.v1.PaymentWebhookResponse
+	29, // [29:36] is the sub-list for method output_type
+	22, // [22:29] is the sub-list for method input_type
+	22, // [22:22] is the sub-list for extension type_name
+	22, // [22:22] is the sub-list for extension extendee
+	0,  // [0:22] is the sub-list for field type_name
 }
 
 func init() { file_payment_v1_payment_proto_init() }

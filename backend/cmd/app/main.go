@@ -36,8 +36,11 @@ import (
 	userv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1/userv1connect"
 	servicev1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/service/v1/servicev1connect"
 	schedulev1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/schedule/v1/schedulev1connect"
+	bookingv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/booking/v1/bookingv1connect"
+	paymentv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/payment/v1/paymentv1connect"
 
 	connecttransport "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/transport/connect"
+	gateway "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/infrastructure/payment"
 
 	authuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/auth"
 	locationuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/location"
@@ -45,6 +48,8 @@ import (
 	useruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/user"
 	serviceuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/service"
 	scheduleuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/schedule"
+	bookinguc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/booking"
+	paymentuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/payment"
 )
 
 func main() {
@@ -95,6 +100,10 @@ func main() {
 	locationRepo := postgres.NewLocationRepo(queries)
 	serviceRepo := postgres.NewServiceRepo(queries)
 	scheduleRepo := postgres.NewScheduleRepo(queries)
+	bookingRepo := postgres.NewBookingRepo(queries)
+	paymentRepo := postgres.NewPaymentRepo(queries)
+
+	paymentGateway := gateway.NewManualGateway()
 
 	// INITIALIZE CACHES
 	sessionCache := cache.NewRedisCache[authuc.SessionValue](rdb)
@@ -110,6 +119,8 @@ func main() {
 	publisher := broker.NewKafkaPublisher[authuc.UserRegisteredEvent](kafkaWriter)
 	resetEvents := broker.NewKafkaPublisher[authuc.PasswordResetRequestedEvent](kafkaWriter)
 	passwordEvents := broker.NewKafkaPublisher[authuc.PasswordChangedEvent](kafkaWriter)
+	bookingEvents := broker.NewKafkaPublisher[any](kafkaWriter)
+	paymentEvents := broker.NewKafkaPublisher[any](kafkaWriter)
 
 	// INITIALIZE SERVICES
 	passwordHasher := hasher.NewBcryptHasher()
@@ -267,6 +278,42 @@ func main() {
 	addExceptionUC := scheduleuc.NewAddExceptionUseCase(scheduleDeps)
 	deleteExceptionUC := scheduleuc.NewDeleteExceptionUseCase(scheduleDeps)
 
+	// booking
+	bookingDeps := bookinguc.Deps{
+		Bookings: bookingRepo,
+		Services: serviceRepo,
+		Masters:  masterRepo,
+		Users:    userRepo,
+		Locations: locationRepo,
+		Cache:    userCache,
+		CacheTTL: 5 * time.Minute,
+	}
+
+	createApptUC := bookinguc.NewCreateUseCase(bookingDeps, bookingEvents)
+	getApptUC := bookinguc.NewGetUseCase(bookingDeps)
+	listMyApptUC := bookinguc.NewListMyUseCase(bookingDeps)
+	listMasterApptUC := bookinguc.NewListMasterUseCase(bookingDeps)
+	cancelApptUC := bookinguc.NewCancelUseCase(bookingDeps, bookingEvents)
+	rescheduleApptUC := bookinguc.NewRescheduleUseCase(bookingDeps, bookingEvents)
+	confirmApptUC := bookinguc.NewConfirmUseCase(bookingDeps, bookingEvents)
+	completeApptUC := bookinguc.NewCompleteUseCase(bookingDeps, bookingEvents)
+	noShowUC := bookinguc.NewNoShowUseCase(bookingDeps)
+
+	// payment
+
+	paymentDeps := paymentuc.Deps{
+		Payments: paymentRepo,
+		Users:    userRepo,
+	}
+
+	createPaymentUC := paymentuc.NewCreateUseCase(paymentDeps, paymentGateway)
+	getPaymentUC := paymentuc.NewGetUseCase(paymentDeps)
+	listMyPaymentsUC := paymentuc.NewListMyUseCase(paymentDeps)
+	listAllPaymentsUC := paymentuc.NewListAllUseCase(paymentDeps)
+	refundPaymentUC := paymentuc.NewRefundUseCase(paymentDeps, paymentGateway, paymentEvents)
+	cancelPaymentUC := paymentuc.NewCancelUseCase(paymentDeps)
+	webhookUC := paymentuc.NewWebhookUseCase(paymentDeps, paymentGateway, paymentEvents)
+
 	// INITIALIZE HANDLERS
 
 	authHandler := connecttransport.NewAuthHandler(
@@ -311,6 +358,17 @@ func main() {
 		getMonthUC, getDayUC, getNextUC,
 		getRulesUC, updateRulesUC,
 		listExceptionsUC, addExceptionUC, deleteExceptionUC,
+	)
+
+	bookingHandler := connecttransport.NewBookingHandler(
+		createApptUC, getApptUC, listMyApptUC, listMasterApptUC,
+		cancelApptUC, rescheduleApptUC, confirmApptUC, completeApptUC, noShowUC,
+	)
+
+	paymentHandler := connecttransport.NewPaymentHandler(
+		createPaymentUC, getPaymentUC,
+		listMyPaymentsUC, listAllPaymentsUC,
+		refundPaymentUC, cancelPaymentUC, webhookUC,
 	)
 
 	// INITIALIZE HTTP SERVER
@@ -372,6 +430,24 @@ func main() {
 		),
 	)
 	mux.Handle(schedulePath, scheduleH)
+
+	bookingPath, bookingH := bookingv1connect.NewBookingServiceHandler(
+		bookingHandler,
+		connect.WithInterceptors(
+			middleware.NewAuthInterceptor(tokenService),
+			middleware.NewRBACInterceptor(),
+		),
+	)
+	mux.Handle(bookingPath, bookingH)
+
+	paymentPath, paymentH := paymentv1connect.NewPaymentServiceHandler(
+		paymentHandler,
+		connect.WithInterceptors(
+			middleware.NewAuthInterceptor(tokenService),
+			middleware.NewRBACInterceptor(),
+		),
+	)
+	mux.Handle(paymentPath, paymentH)
 
 	srv := &http.Server{
 		Addr:    ":8080",
