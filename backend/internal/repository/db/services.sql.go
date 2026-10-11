@@ -73,6 +73,25 @@ func (q *Queries) DeleteService(ctx context.Context, arg DeleteServiceParams) er
 	return err
 }
 
+const existsServiceByDefaultID = `-- name: ExistsServiceByDefaultID :one
+SELECT EXISTS(
+    SELECT 1 FROM services
+    WHERE master_id = $1 AND default_service_id = $2 AND is_active = TRUE
+) AS exists
+`
+
+type ExistsServiceByDefaultIDParams struct {
+	MasterID         int32       `json:"master_id"`
+	DefaultServiceID pgtype.Int4 `json:"default_service_id"`
+}
+
+func (q *Queries) ExistsServiceByDefaultID(ctx context.Context, arg ExistsServiceByDefaultIDParams) (bool, error) {
+	row := q.db.QueryRow(ctx, existsServiceByDefaultID, arg.MasterID, arg.DefaultServiceID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const getDefaultServiceForCopy = `-- name: GetDefaultServiceForCopy :one
 SELECT id, category_id, slug, name, description, price, currency, duration_mins
 FROM default_services WHERE id = $1 AND is_active = TRUE

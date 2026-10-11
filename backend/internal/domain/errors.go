@@ -22,4 +22,6 @@ var (
     ErrMasterNotFound            = errors.New("master not found")
     ErrLocationNotFound          = errors.New("location not found")
 	ErrForbidden                 = errors.New("forbidden")
+    ErrServiceNotFound           = errors.New("service not found")
+	ErrServiceInUse              = errors.New("service has active appointments")
 )

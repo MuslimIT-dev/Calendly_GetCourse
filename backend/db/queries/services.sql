@@ -71,3 +71,9 @@ UPDATE masters SET min_price = (
     WHERE master_id = $1 AND is_active = TRUE
 ), updated_at = NOW()
 WHERE id = $1;
+
+-- name: ExistsServiceByDefaultID :one
+SELECT EXISTS(
+    SELECT 1 FROM services
+    WHERE master_id = $1 AND default_service_id = $2 AND is_active = TRUE
+) AS exists;

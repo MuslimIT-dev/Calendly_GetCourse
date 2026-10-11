@@ -66,6 +66,10 @@ CREATE INDEX idx_service_locations_location
 ON service_locations(location_id)
 WHERE is_active = TRUE;
 
+CREATE UNIQUE INDEX uniq_services_master_default
+ON services(master_id, default_service_id)
+WHERE default_service_id IS NOT NULL AND is_active = TRUE;
+
 CREATE TRIGGER trg_default_services_updated_at
 BEFORE UPDATE ON default_services
 FOR EACH ROW EXECUTE FUNCTION update_updated_at();

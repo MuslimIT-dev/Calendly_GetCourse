@@ -51,6 +51,7 @@ type Querier interface {
 	DeleteService(ctx context.Context, arg DeleteServiceParams) error
 	DeleteUser(ctx context.Context, id int32) error
 	ExceptionBelongsToLocation(ctx context.Context, arg ExceptionBelongsToLocationParams) (bool, error)
+	ExistsServiceByDefaultID(ctx context.Context, arg ExistsServiceByDefaultIDParams) (bool, error)
 	ExpirePendingPayments(ctx context.Context) (int64, error)
 	GetAppointmentByID(ctx context.Context, id int64) (GetAppointmentByIDRow, error)
 	GetAverageRatingByTarget(ctx context.Context, arg GetAverageRatingByTargetParams) (GetAverageRatingByTargetRow, error)

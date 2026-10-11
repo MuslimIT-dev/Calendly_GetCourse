@@ -34,6 +34,7 @@ import (
 	locationv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/location/v1/locationv1connect"
 	masterv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/master/v1/masterv1connect"
 	userv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1/userv1connect"
+	servicev1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/service/v1/servicev1connect"
 
 	connecttransport "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/transport/connect"
 
@@ -41,6 +42,7 @@ import (
 	locationuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/location"
 	masteruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/master"
 	useruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/user"
+	serviceuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/service"
 )
 
 func main() {
@@ -89,6 +91,7 @@ func main() {
 	userRepo := postgres.NewUserRepo(queries)
 	masterRepo := postgres.NewMasterRepo(queries)
 	locationRepo := postgres.NewLocationRepo(queries)
+	serviceRepo := postgres.NewServiceRepo(queries)
 
 	// INITIALIZE CACHES
 	sessionCache := cache.NewRedisCache[authuc.SessionValue](rdb)
@@ -97,6 +100,7 @@ func main() {
 	userCache := cache.NewRedisCache[domain.CachedUser](rdb)
 	masterCache := cache.NewRedisCache[domain.CachedMaster](rdb)
 	locationCache := cache.NewRedisCache[domain.CachedLocations](rdb)
+	serviceCache := cache.NewRedisCache[domain.CachedServices](rdb)
 
 	// INITIALIZE KAFKA PUBLISHER
 	publisher := broker.NewKafkaPublisher[authuc.UserRegisteredEvent](kafkaWriter)
@@ -227,6 +231,19 @@ func main() {
 	updateLocationUC := locationuc.NewUpdateLocationUseCase(locationDeps)
 	deleteLocationUC := locationuc.NewDeleteLocationUseCase(locationDeps)
 
+	// service
+	serviceDeps := serviceuc.Deps{
+		Services: serviceRepo,
+		Masters:  masterRepo,
+		Cache:    serviceCache,
+		CacheTTL: 5 * time.Minute,
+	}
+
+	getMyServicesUC := serviceuc.NewGetMyServicesUseCase(serviceDeps)
+	addServiceUC := serviceuc.NewAddServiceUseCase(serviceDeps)
+	updateServiceUC := serviceuc.NewUpdateServiceUseCase(serviceDeps)
+	deleteServiceUC := serviceuc.NewDeleteServiceUseCase(serviceDeps)
+	
 	// INITIALIZE HANDLERS
 
 	authHandler := connecttransport.NewAuthHandler(
@@ -258,6 +275,13 @@ func main() {
 		createLocationUC,
 		updateLocationUC,
 		deleteLocationUC,
+	)
+
+	serviceHandler := connecttransport.NewServiceHandler(
+		getMyServicesUC,
+		addServiceUC,
+		updateServiceUC,
+		deleteServiceUC,
 	)
 
 	// INITIALIZE HTTP SERVER
@@ -301,6 +325,15 @@ func main() {
 		),
 	)
 	mux.Handle(locationPath, locationH)
+
+	servicePath, serviceH := servicev1connect.NewServiceServiceHandler(
+		serviceHandler,
+		connect.WithInterceptors(
+			middleware.NewAuthInterceptor(tokenService),
+			middleware.NewRBACInterceptor(),
+		),
+	)
+	mux.Handle(servicePath, serviceH)
 
 	srv := &http.Server{
 		Addr:    ":8080",

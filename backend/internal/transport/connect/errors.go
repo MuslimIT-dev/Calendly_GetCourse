@@ -52,6 +52,10 @@ func mapDomainError(err error) error {
 		return connect.NewError(connect.CodeNotFound, err)
 	case errors.Is(err, domain.ErrForbidden):
 		return connect.NewError(connect.CodePermissionDenied, err)
+	case errors.Is(err, domain.ErrServiceNotFound):
+		return connect.NewError(connect.CodeNotFound, err)
+	case errors.Is(err, domain.ErrServiceAlreadyAdded):
+		return connect.NewError(connect.CodeAlreadyExists, err)
 	default:
 		return connect.NewError(connect.CodeInternal, err)
 	}

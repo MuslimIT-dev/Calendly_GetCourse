@@ -7,6 +7,7 @@ DROP INDEX IF EXISTS idx_services_id_active;
 DROP INDEX IF EXISTS idx_services_price_currency;
 DROP INDEX IF EXISTS idx_service_locations_service;
 DROP INDEX IF EXISTS idx_service_locations_location;
+DROP INDEX IF EXISTS uniq_services_master_default;
 
 DROP TABLE IF EXISTS service_locations CASCADE;
 DROP TABLE IF EXISTS services CASCADE;
