@@ -94,6 +94,12 @@ func mapDomainError(err error) error {
 		return connect.NewError(connect.CodeFailedPrecondition, err)
 	case errors.Is(err, domain.ErrDefaultServiceNotFound):
 		return connect.NewError(connect.CodeNotFound, err)
+	case errors.Is(err, domain.ErrReviewNotFound):
+		return connect.NewError(connect.CodeNotFound, err)
+	case errors.Is(err, domain.ErrReviewAlreadyExists):
+		return connect.NewError(connect.CodeAlreadyExists, err)
+	case errors.Is(err, domain.ErrReviewNotAllowed):
+		return connect.NewError(connect.CodeFailedPrecondition, err)
 	default:
 		return connect.NewError(connect.CodeInternal, err)
 	}

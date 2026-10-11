@@ -36,6 +36,7 @@ import (
 	locationv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/location/v1/locationv1connect"
 	masterv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/master/v1/masterv1connect"
 	paymentv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/payment/v1/paymentv1connect"
+	reviewv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/review/v1/reviewv1connect"
 	schedulev1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/schedule/v1/schedulev1connect"
 	servicev1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/service/v1/servicev1connect"
 	userv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1/userv1connect"
@@ -49,6 +50,7 @@ import (
 	locationuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/location"
 	masteruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/master"
 	paymentuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/payment"
+	reviewuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/review"
 	scheduleuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/schedule"
 	serviceuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/service"
 	useruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/user"
@@ -105,6 +107,7 @@ func main() {
 	bookingRepo := postgres.NewBookingRepo(queries)
 	paymentRepo := postgres.NewPaymentRepo(queries)
 	catalogRepo := postgres.NewCatalogRepo(queries)
+	reviewRepo := postgres.NewReviewRepo(queries)
 
 	paymentGateway := gateway.NewManualGateway()
 
@@ -119,6 +122,7 @@ func main() {
 	scheduleCache := cache.NewRedisCache[domain.CachedScheduleRules](rdb)
 	categoriesCache := cache.NewRedisCache[domain.CachedCategories](rdb)
 	defaultServicesCache := cache.NewRedisCache[domain.CachedDefaultServices](rdb)
+	reviewCache := cache.NewRedisCache[domain.CachedReviewSummary](rdb)
 
 	// INITIALIZE KAFKA PUBLISHER
 	publisher := broker.NewKafkaPublisher[authuc.UserRegisteredEvent](kafkaWriter)
@@ -126,6 +130,7 @@ func main() {
 	passwordEvents := broker.NewKafkaPublisher[authuc.PasswordChangedEvent](kafkaWriter)
 	bookingEvents := broker.NewKafkaPublisher[any](kafkaWriter)
 	paymentEvents := broker.NewKafkaPublisher[any](kafkaWriter)
+	reviewEvents := broker.NewKafkaPublisher[any](kafkaWriter)
 
 	// INITIALIZE SERVICES
 	passwordHasher := hasher.NewBcryptHasher()
@@ -336,6 +341,23 @@ func main() {
 	updateDefaultServiceUC := cataloguc.NewUpdateDefaultServiceUseCase(catalogDeps)
 	deleteDefaultServiceUC := cataloguc.NewDeleteDefaultServiceUseCase(catalogDeps)
 
+	reviewDeps := reviewuc.Deps{
+		Reviews:  reviewRepo,
+		Bookings: bookingRepo,
+		Masters:  masterRepo,
+		Cache:    reviewCache,
+		CacheTTL: 5 * time.Minute,
+	}
+	createReviewUC := reviewuc.NewCreateUseCase(reviewDeps, reviewEvents)
+	getReviewUC := reviewuc.NewGetUseCase(reviewDeps)
+	listTargetReviewsUC := reviewuc.NewListTargetUseCase(reviewDeps)
+	listMyReviewsUC := reviewuc.NewListMyUseCase(reviewDeps)
+	replyReviewUC := reviewuc.NewReplyUseCase(reviewDeps, reviewEvents)
+	updateReviewUC := reviewuc.NewUpdateUseCase(reviewDeps)
+	deleteReviewUC := reviewuc.NewDeleteUseCase(reviewDeps)
+	hideReviewUC := reviewuc.NewHideUseCase(reviewDeps)
+	summaryReviewUC := reviewuc.NewGetSummaryUseCase(reviewDeps)
+
 	// INITIALIZE HANDLERS
 
 	authHandler := connecttransport.NewAuthHandler(
@@ -399,6 +421,10 @@ func main() {
 	adminCatalogHandler := connecttransport.NewAdminCatalogHandler(
 		createCategoryUC, updateCategoryUC, deleteCategoryUC,
 		createDefaultServiceUC, updateDefaultServiceUC, deleteDefaultServiceUC,
+	)
+	reviewHandler := connecttransport.NewReviewHandler(
+		createReviewUC, getReviewUC, listTargetReviewsUC, listMyReviewsUC,
+		replyReviewUC, updateReviewUC, deleteReviewUC, hideReviewUC, summaryReviewUC,
 	)
 
 	// INITIALIZE HTTP SERVER
@@ -496,6 +522,15 @@ func main() {
 		),
 	)
 	mux.Handle(adminCatalogPath, adminCatalogH)
+
+	reviewPath, reviewH := reviewv1connect.NewReviewServiceHandler(
+		reviewHandler,
+		connect.WithInterceptors(
+			middleware.NewAuthInterceptor(tokenService),
+			middleware.NewRBACInterceptor(),
+		),
+	)
+	mux.Handle(reviewPath, reviewH)
 
 	srv := &http.Server{
 		Addr:    ":8080",

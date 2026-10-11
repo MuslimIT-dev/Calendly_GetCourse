@@ -43,7 +43,7 @@ WHERE r.target = sqlc.arg('target')
   AND r.target_id = sqlc.arg('target_id')
   AND r.status = 1
   AND (sqlc.narg('cursor_time')::timestamptz IS NULL
-       OR (r.created_at, r.id) < (sqlc.narg('cursor_time'), sqlc.narg('cursor_id')))
+       OR (r.created_at, r.id) < (sqlc.narg('cursor_time'), sqlc.narg('cursor_id')::bigint))
 ORDER BY r.created_at DESC, r.id DESC
 LIMIT sqlc.arg('page_size');
 
@@ -75,7 +75,7 @@ WHERE r.author_id = sqlc.arg('author_id')
   AND r.status <> 3
   AND (sqlc.narg('target_filter')::smallint IS NULL OR r.target = sqlc.narg('target_filter'))
   AND (sqlc.narg('cursor_time')::timestamptz IS NULL
-       OR (r.created_at, r.id) < (sqlc.narg('cursor_time'), sqlc.narg('cursor_id')))
+       OR (r.created_at, r.id) < (sqlc.narg('cursor_time'), sqlc.narg('cursor_id')::bigint))
 ORDER BY r.created_at DESC, r.id DESC
 LIMIT sqlc.arg('page_size');
 
@@ -95,7 +95,7 @@ WHERE r.target = sqlc.arg('target')
   AND (sqlc.narg('only_unanswered')::bool IS NULL
        OR (sqlc.narg('only_unanswered') = TRUE AND r.reply IS NULL))
   AND (sqlc.narg('cursor_time')::timestamptz IS NULL
-       OR (r.created_at, r.id) < (sqlc.narg('cursor_time'), sqlc.narg('cursor_id')))
+       OR (r.created_at, r.id) < (sqlc.narg('cursor_time'), sqlc.narg('cursor_id')::bigint))
 ORDER BY r.created_at DESC, r.id DESC
 LIMIT sqlc.arg('page_size');
 

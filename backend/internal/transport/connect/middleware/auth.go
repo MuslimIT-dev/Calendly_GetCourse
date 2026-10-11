@@ -39,6 +39,10 @@ var publicMethods = map[string]struct{}{
 	"/catalog.v1.CatalogService/GetDefaultService":   {},
 
 	"/payment.v1.PaymentService/PaymentWebhook": {},
+
+	"/review.v1.ReviewService/GetReview":         {},
+	"/review.v1.ReviewService/ListTargetReviews": {},
+	"/review.v1.ReviewService/GetReviewSummary":  {},
 }
 
 func NewAuthInterceptor(verifier TokenVerifier) connect.UnaryInterceptorFunc {

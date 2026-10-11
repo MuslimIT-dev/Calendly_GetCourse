@@ -37,4 +37,7 @@ var (
 	ErrCategoryNotFound          = errors.New("category not found")
 	ErrCategoryHasServices       = errors.New("category has active services")
 	ErrDefaultServiceNotFound    = errors.New("default service not found")
+	ErrReviewNotFound            = errors.New("review not found")
+	ErrReviewAlreadyExists       = errors.New("review already exists for this reference")
+	ErrReviewNotAllowed          = errors.New("review not allowed")
 )

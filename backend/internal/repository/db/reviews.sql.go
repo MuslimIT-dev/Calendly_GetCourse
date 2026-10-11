@@ -307,7 +307,7 @@ WHERE r.author_id = $1
   AND r.status <> 3
   AND ($2::smallint IS NULL OR r.target = $2)
   AND ($3::timestamptz IS NULL
-       OR (r.created_at, r.id) < ($3, $4))
+       OR (r.created_at, r.id) < ($3, $4::bigint))
 ORDER BY r.created_at DESC, r.id DESC
 LIMIT $5
 `
@@ -316,7 +316,7 @@ type ListMyReviewsParams struct {
 	AuthorID     int32              `json:"author_id"`
 	TargetFilter pgtype.Int2        `json:"target_filter"`
 	CursorTime   pgtype.Timestamptz `json:"cursor_time"`
-	CursorID     pgtype.Timestamptz `json:"cursor_id"`
+	CursorID     pgtype.Int8        `json:"cursor_id"`
 	PageSize     int32              `json:"page_size"`
 }
 
@@ -394,7 +394,7 @@ WHERE r.target = $1
   AND ($3::bool IS NULL
        OR ($3 = TRUE AND r.reply IS NULL))
   AND ($4::timestamptz IS NULL
-       OR (r.created_at, r.id) < ($4, $5))
+       OR (r.created_at, r.id) < ($4, $5::bigint))
 ORDER BY r.created_at DESC, r.id DESC
 LIMIT $6
 `
@@ -404,7 +404,7 @@ type ListMyTargetReviewsParams struct {
 	TargetID       int32              `json:"target_id"`
 	OnlyUnanswered pgtype.Bool        `json:"only_unanswered"`
 	CursorTime     pgtype.Timestamptz `json:"cursor_time"`
-	CursorID       pgtype.Timestamptz `json:"cursor_id"`
+	CursorID       pgtype.Int8        `json:"cursor_id"`
 	PageSize       int32              `json:"page_size"`
 }
 
@@ -481,7 +481,7 @@ WHERE r.target = $1
   AND r.target_id = $2
   AND r.status = 1
   AND ($3::timestamptz IS NULL
-       OR (r.created_at, r.id) < ($3, $4))
+       OR (r.created_at, r.id) < ($3, $4::bigint))
 ORDER BY r.created_at DESC, r.id DESC
 LIMIT $5
 `
@@ -490,7 +490,7 @@ type ListTargetReviewsParams struct {
 	Target     int16              `json:"target"`
 	TargetID   int32              `json:"target_id"`
 	CursorTime pgtype.Timestamptz `json:"cursor_time"`
-	CursorID   pgtype.Timestamptz `json:"cursor_id"`
+	CursorID   pgtype.Int8        `json:"cursor_id"`
 	PageSize   int32              `json:"page_size"`
 }
 
