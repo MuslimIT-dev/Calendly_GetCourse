@@ -99,6 +99,7 @@ func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*domain.Us
 		ID:            row.ID,
 		Name:          row.Name.String,
 		Email:         row.Email,
+		PasswordHash:  row.PasswordHash,
 		AvatarURL:     row.AvatarUrl.String,
 		Timezone:      row.Timezone.String,
 		EmailVerified: row.EmailVerified.Bool,
