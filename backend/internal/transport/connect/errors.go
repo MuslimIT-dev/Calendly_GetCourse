@@ -88,6 +88,12 @@ func mapDomainError(err error) error {
 		return connect.NewError(connect.CodeFailedPrecondition, err)
 	case errors.Is(err, domain.ErrPaymentSignatureBad):
 		return connect.NewError(connect.CodeUnauthenticated, err)
+	case errors.Is(err, domain.ErrCategoryNotFound):
+		return connect.NewError(connect.CodeNotFound, err)
+	case errors.Is(err, domain.ErrCategoryHasServices):
+		return connect.NewError(connect.CodeFailedPrecondition, err)
+	case errors.Is(err, domain.ErrDefaultServiceNotFound):
+		return connect.NewError(connect.CodeNotFound, err)
 	default:
 		return connect.NewError(connect.CodeInternal, err)
 	}

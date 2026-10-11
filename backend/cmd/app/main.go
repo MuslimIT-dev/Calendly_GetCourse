@@ -31,25 +31,27 @@ import (
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/pkg/password"
 
 	authv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/auth/v1/authv1connect"
+	bookingv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/booking/v1/bookingv1connect"
+	catalogv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/catalog/v1/catalogv1connect"
 	locationv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/location/v1/locationv1connect"
 	masterv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/master/v1/masterv1connect"
-	userv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1/userv1connect"
-	servicev1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/service/v1/servicev1connect"
-	schedulev1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/schedule/v1/schedulev1connect"
-	bookingv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/booking/v1/bookingv1connect"
 	paymentv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/payment/v1/paymentv1connect"
+	schedulev1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/schedule/v1/schedulev1connect"
+	servicev1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/service/v1/servicev1connect"
+	userv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1/userv1connect"
 
-	connecttransport "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/transport/connect"
 	gateway "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/infrastructure/payment"
+	connecttransport "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/transport/connect"
 
 	authuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/auth"
+	bookinguc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/booking"
+	cataloguc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/catalog"
 	locationuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/location"
 	masteruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/master"
-	useruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/user"
-	serviceuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/service"
-	scheduleuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/schedule"
-	bookinguc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/booking"
 	paymentuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/payment"
+	scheduleuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/schedule"
+	serviceuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/service"
+	useruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/user"
 )
 
 func main() {
@@ -102,6 +104,7 @@ func main() {
 	scheduleRepo := postgres.NewScheduleRepo(queries)
 	bookingRepo := postgres.NewBookingRepo(queries)
 	paymentRepo := postgres.NewPaymentRepo(queries)
+	catalogRepo := postgres.NewCatalogRepo(queries)
 
 	paymentGateway := gateway.NewManualGateway()
 
@@ -114,6 +117,8 @@ func main() {
 	locationCache := cache.NewRedisCache[domain.CachedLocations](rdb)
 	serviceCache := cache.NewRedisCache[domain.CachedServices](rdb)
 	scheduleCache := cache.NewRedisCache[domain.CachedScheduleRules](rdb)
+	categoriesCache := cache.NewRedisCache[domain.CachedCategories](rdb)
+	defaultServicesCache := cache.NewRedisCache[domain.CachedDefaultServices](rdb)
 
 	// INITIALIZE KAFKA PUBLISHER
 	publisher := broker.NewKafkaPublisher[authuc.UserRegisteredEvent](kafkaWriter)
@@ -258,7 +263,7 @@ func main() {
 	addServiceUC := serviceuc.NewAddServiceUseCase(serviceDeps)
 	updateServiceUC := serviceuc.NewUpdateServiceUseCase(serviceDeps)
 	deleteServiceUC := serviceuc.NewDeleteServiceUseCase(serviceDeps)
-	
+
 	// schedule
 	scheduleDeps := scheduleuc.Deps{
 		Schedule:  scheduleRepo,
@@ -280,13 +285,13 @@ func main() {
 
 	// booking
 	bookingDeps := bookinguc.Deps{
-		Bookings: bookingRepo,
-		Services: serviceRepo,
-		Masters:  masterRepo,
-		Users:    userRepo,
+		Bookings:  bookingRepo,
+		Services:  serviceRepo,
+		Masters:   masterRepo,
+		Users:     userRepo,
 		Locations: locationRepo,
-		Cache:    userCache,
-		CacheTTL: 5 * time.Minute,
+		Cache:     userCache,
+		CacheTTL:  5 * time.Minute,
 	}
 
 	createApptUC := bookinguc.NewCreateUseCase(bookingDeps, bookingEvents)
@@ -313,6 +318,23 @@ func main() {
 	refundPaymentUC := paymentuc.NewRefundUseCase(paymentDeps, paymentGateway, paymentEvents)
 	cancelPaymentUC := paymentuc.NewCancelUseCase(paymentDeps)
 	webhookUC := paymentuc.NewWebhookUseCase(paymentDeps, paymentGateway, paymentEvents)
+
+	catalogDeps := cataloguc.Deps{
+		Catalog:         catalogRepo,
+		CategoriesCache: categoriesCache,
+		ServicesCache:   defaultServicesCache,
+		CacheTTL:        10 * time.Minute,
+	}
+	listCategoriesUC := cataloguc.NewListCategoriesUseCase(catalogDeps)
+	getCategoryUC := cataloguc.NewGetCategoryUseCase(catalogDeps)
+	listDefaultServicesUC := cataloguc.NewListDefaultServicesUseCase(catalogDeps)
+	getDefaultServiceUC := cataloguc.NewGetDefaultServiceUseCase(catalogDeps)
+	createCategoryUC := cataloguc.NewCreateCategoryUseCase(catalogDeps)
+	updateCategoryUC := cataloguc.NewUpdateCategoryUseCase(catalogDeps)
+	deleteCategoryUC := cataloguc.NewDeleteCategoryUseCase(catalogDeps)
+	createDefaultServiceUC := cataloguc.NewCreateDefaultServiceUseCase(catalogDeps)
+	updateDefaultServiceUC := cataloguc.NewUpdateDefaultServiceUseCase(catalogDeps)
+	deleteDefaultServiceUC := cataloguc.NewDeleteDefaultServiceUseCase(catalogDeps)
 
 	// INITIALIZE HANDLERS
 
@@ -369,6 +391,14 @@ func main() {
 		createPaymentUC, getPaymentUC,
 		listMyPaymentsUC, listAllPaymentsUC,
 		refundPaymentUC, cancelPaymentUC, webhookUC,
+	)
+
+	catalogHandler := connecttransport.NewCatalogHandler(
+		listCategoriesUC, getCategoryUC, listDefaultServicesUC, getDefaultServiceUC,
+	)
+	adminCatalogHandler := connecttransport.NewAdminCatalogHandler(
+		createCategoryUC, updateCategoryUC, deleteCategoryUC,
+		createDefaultServiceUC, updateDefaultServiceUC, deleteDefaultServiceUC,
 	)
 
 	// INITIALIZE HTTP SERVER
@@ -448,6 +478,24 @@ func main() {
 		),
 	)
 	mux.Handle(paymentPath, paymentH)
+
+	catalogPath, catalogH := catalogv1connect.NewCatalogServiceHandler(
+		catalogHandler,
+		connect.WithInterceptors(
+			middleware.NewAuthInterceptor(tokenService),
+			middleware.NewRBACInterceptor(),
+		),
+	)
+	mux.Handle(catalogPath, catalogH)
+
+	adminCatalogPath, adminCatalogH := catalogv1connect.NewAdminCatalogServiceHandler(
+		adminCatalogHandler,
+		connect.WithInterceptors(
+			middleware.NewAuthInterceptor(tokenService),
+			middleware.NewRBACInterceptor(),
+		),
+	)
+	mux.Handle(adminCatalogPath, adminCatalogH)
 
 	srv := &http.Server{
 		Addr:    ":8080",
