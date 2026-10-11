@@ -30,6 +30,10 @@ var publicMethods = map[string]struct{}{
 	"/location.v1.LocationService/ListLocations": {},
 	"/location.v1.LocationService/GetLocation":   {},
 
+	"/schedule.v1.ScheduleService/GetMonthSchedule":     {},
+	"/schedule.v1.ScheduleService/GetDaySchedule":       {},
+	"/schedule.v1.ScheduleService/GetNextAvailableSlot": {},
+
 	"/catalog.v1.CatalogService/ListCategories":      {},
 	"/catalog.v1.CatalogService/ListDefaultServices": {},
 	"/catalog.v1.CatalogService/GetDefaultService":   {},

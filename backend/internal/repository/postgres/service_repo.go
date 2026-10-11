@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/postgres/db"
+	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/db"
 )
 
 type ServiceRepo struct {

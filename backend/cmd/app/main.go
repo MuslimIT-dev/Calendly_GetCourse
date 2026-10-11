@@ -35,6 +35,7 @@ import (
 	masterv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/master/v1/masterv1connect"
 	userv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1/userv1connect"
 	servicev1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/service/v1/servicev1connect"
+	schedulev1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/schedule/v1/schedulev1connect"
 
 	connecttransport "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/transport/connect"
 
@@ -43,6 +44,7 @@ import (
 	masteruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/master"
 	useruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/user"
 	serviceuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/service"
+	scheduleuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/schedule"
 )
 
 func main() {
@@ -92,6 +94,7 @@ func main() {
 	masterRepo := postgres.NewMasterRepo(queries)
 	locationRepo := postgres.NewLocationRepo(queries)
 	serviceRepo := postgres.NewServiceRepo(queries)
+	scheduleRepo := postgres.NewScheduleRepo(queries)
 
 	// INITIALIZE CACHES
 	sessionCache := cache.NewRedisCache[authuc.SessionValue](rdb)
@@ -101,6 +104,7 @@ func main() {
 	masterCache := cache.NewRedisCache[domain.CachedMaster](rdb)
 	locationCache := cache.NewRedisCache[domain.CachedLocations](rdb)
 	serviceCache := cache.NewRedisCache[domain.CachedServices](rdb)
+	scheduleCache := cache.NewRedisCache[domain.CachedScheduleRules](rdb)
 
 	// INITIALIZE KAFKA PUBLISHER
 	publisher := broker.NewKafkaPublisher[authuc.UserRegisteredEvent](kafkaWriter)
@@ -244,6 +248,25 @@ func main() {
 	updateServiceUC := serviceuc.NewUpdateServiceUseCase(serviceDeps)
 	deleteServiceUC := serviceuc.NewDeleteServiceUseCase(serviceDeps)
 	
+	// schedule
+	scheduleDeps := scheduleuc.Deps{
+		Schedule:  scheduleRepo,
+		Locations: locationRepo,
+		Masters:   masterRepo,
+		Services:  serviceRepo,
+		Cache:     scheduleCache,
+		CacheTTL:  5 * time.Minute,
+	}
+
+	getMonthUC := scheduleuc.NewGetMonthUseCase(scheduleDeps)
+	getDayUC := scheduleuc.NewGetDayUseCase(scheduleDeps)
+	getNextUC := scheduleuc.NewGetNextAvailableUseCase(scheduleDeps)
+	getRulesUC := scheduleuc.NewGetRulesUseCase(scheduleDeps)
+	updateRulesUC := scheduleuc.NewUpdateRulesUseCase(scheduleDeps)
+	listExceptionsUC := scheduleuc.NewListExceptionsUseCase(scheduleDeps)
+	addExceptionUC := scheduleuc.NewAddExceptionUseCase(scheduleDeps)
+	deleteExceptionUC := scheduleuc.NewDeleteExceptionUseCase(scheduleDeps)
+
 	// INITIALIZE HANDLERS
 
 	authHandler := connecttransport.NewAuthHandler(
@@ -282,6 +305,12 @@ func main() {
 		addServiceUC,
 		updateServiceUC,
 		deleteServiceUC,
+	)
+
+	scheduleHandler := connecttransport.NewScheduleHandler(
+		getMonthUC, getDayUC, getNextUC,
+		getRulesUC, updateRulesUC,
+		listExceptionsUC, addExceptionUC, deleteExceptionUC,
 	)
 
 	// INITIALIZE HTTP SERVER
@@ -334,6 +363,15 @@ func main() {
 		),
 	)
 	mux.Handle(servicePath, serviceH)
+
+	schedulePath, scheduleH := schedulev1connect.NewScheduleServiceHandler(
+		scheduleHandler,
+		connect.WithInterceptors(
+			middleware.NewAuthInterceptor(tokenService),
+			middleware.NewRBACInterceptor(),
+		),
+	)
+	mux.Handle(schedulePath, scheduleH)
 
 	srv := &http.Server{
 		Addr:    ":8080",

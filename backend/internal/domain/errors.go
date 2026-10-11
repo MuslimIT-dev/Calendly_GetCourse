@@ -24,4 +24,5 @@ var (
 	ErrForbidden                 = errors.New("forbidden")
     ErrServiceNotFound           = errors.New("service not found")
 	ErrServiceInUse              = errors.New("service has active appointments")
+    ErrExceptionNotFound         = errors.New("exception not found")
 )
