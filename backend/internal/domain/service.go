@@ -49,7 +49,7 @@ type ServiceRepository interface {
 	ListByMaster(ctx context.Context, masterID int32) ([]*Service, error)
 	Create(ctx context.Context, s *Service) (*Service, error)
 	Update(ctx context.Context, s *Service) (*Service, error)
-	Delete(ctx context.Context, id int32) error
+	Delete(ctx context.Context, id, masterID int32) error
 	ExistsByDefaultID(ctx context.Context, masterID, defaultServiceID int32) (bool, error)
 	GetDefaultTemplate(ctx context.Context, id int32) (*DefaultServiceTemplate, error)
 	ReplaceLocations(ctx context.Context, serviceID int32, locs []ServiceLocation) error

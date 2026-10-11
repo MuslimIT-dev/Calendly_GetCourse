@@ -41,7 +41,7 @@ func (uc *DeleteServiceUseCase) Execute(ctx context.Context, in DeleteServiceInp
 		return nil, domain.ErrForbidden
 	}
 
-	if err := uc.deps.Services.Delete(ctx, in.ID); err != nil {
+	if err := uc.deps.Services.Delete(ctx, in.ID, master.ID); err != nil {
 		return nil, fmt.Errorf("delete service: %w", err)
 	}
 

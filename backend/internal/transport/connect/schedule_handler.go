@@ -2,12 +2,13 @@ package connect
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"connectrpc.com/connect"
+	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/genproto/googleapis/type/dayofweek"
 	"google.golang.org/genproto/googleapis/type/timeofday"
-	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	schedulev1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/schedule/v1"
@@ -17,13 +18,13 @@ import (
 )
 
 type ScheduleHandler struct {
-	getMonthUC       *scheduleuc.GetMonthUseCase
-	getDayUC         *scheduleuc.GetDayUseCase
-	getNextUC        *scheduleuc.GetNextAvailableUseCase
-	getRulesUC       *scheduleuc.GetRulesUseCase
-	updateRulesUC    *scheduleuc.UpdateRulesUseCase
-	listExceptionsUC *scheduleuc.ListExceptionsUseCase
-	addExceptionUC   *scheduleuc.AddExceptionUseCase
+	getMonthUC        *scheduleuc.GetMonthUseCase
+	getDayUC          *scheduleuc.GetDayUseCase
+	getNextUC         *scheduleuc.GetNextAvailableUseCase
+	getRulesUC        *scheduleuc.GetRulesUseCase
+	updateRulesUC     *scheduleuc.UpdateRulesUseCase
+	listExceptionsUC  *scheduleuc.ListExceptionsUseCase
+	addExceptionUC    *scheduleuc.AddExceptionUseCase
 	deleteExceptionUC *scheduleuc.DeleteExceptionUseCase
 }
 
@@ -266,18 +267,18 @@ func toProtoSlots(in []domain.TimeSlot) []*schedulev1.TimeSlot {
 
 func toProtoRule(r *domain.ScheduleRule) *schedulev1.ScheduleRule {
 	return &schedulev1.ScheduleRule{
-		Id:                    formatID(r.ID),
-		LocationId:            formatID(r.LocationID),
-		DayOfWeek:             dayofweek.DayOfWeek(r.DayOfWeek),
-		IsWorkingDay:          r.IsWorkingDay,
-		WorkStart:             toProtoTimeOfDay(r.WorkStart),
-		WorkEnd:               toProtoTimeOfDay(r.WorkEnd),
-		RestStart:             toProtoTimeOfDay(r.RestStart),
-		RestEnd:               toProtoTimeOfDay(r.RestEnd),
+		Id:                     strconv.Itoa(int(r.ID)),
+		LocationId:             strconv.Itoa(int(r.LocationID)),
+		DayOfWeek:              dayofweek.DayOfWeek(r.DayOfWeek),
+		IsWorkingDay:           r.IsWorkingDay,
+		WorkStart:              toProtoTimeOfDay(r.WorkStart),
+		WorkEnd:                toProtoTimeOfDay(r.WorkEnd),
+		RestStart:              toProtoTimeOfDay(r.RestStart),
+		RestEnd:                toProtoTimeOfDay(r.RestEnd),
 		BufferBetweenSlotsMins: r.BufferBetweenSlotsMin,
-		SlotStepMins:          r.SlotStepMins,
-		CreatedAt:             timestamppb.New(r.CreatedAt),
-		UpdatedAt:             timestamppb.New(r.UpdatedAt),
+		SlotStepMins:           r.SlotStepMins,
+		CreatedAt:              timestamppb.New(r.CreatedAt),
+		UpdatedAt:              timestamppb.New(r.UpdatedAt),
 	}
 }
 
@@ -300,10 +301,9 @@ func fromProtoRule(r *schedulev1.ScheduleRule) *domain.ScheduleRule {
 }
 
 func toProtoException(e *domain.Exception) *schedulev1.Exception {
-func toProtoException(e *domain.Exception) *schedulev1.Exception {
 	return &schedulev1.Exception{
-		Id:          formatID(e.ID),
-		LocationId:  formatID(e.LocationID),
+		Id:          strconv.Itoa(int(e.ID)),
+		LocationId:  strconv.Itoa(int(e.LocationID)),
 		Date:        toProtoDate(e.Date),
 		IsFullDay:   e.IsFullDay,
 		Type:        schedulev1.ExceptionType(e.Type),

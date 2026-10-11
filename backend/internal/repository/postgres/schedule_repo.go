@@ -36,15 +36,15 @@ func (r *ScheduleRepo) GetRulesByLocation(ctx context.Context, locationID int32)
 
 func (r *ScheduleRepo) UpsertRule(ctx context.Context, rule *domain.ScheduleRule) (*domain.ScheduleRule, error) {
 	row, err := r.q.UpsertScheduleRule(ctx, db.UpsertScheduleRuleParams{
-		LocationID:            rule.LocationID,
-		DayOfWeek:             int16(rule.DayOfWeek),
-		IsWorkingDay:          rule.IsWorkingDay,
-		WorkStart:             timeOfDayToPgTime(rule.WorkStart),
-		WorkEnd:               timeOfDayToPgTime(rule.WorkEnd),
-		RestStart:             timeOfDayToPgTime(rule.RestStart),
-		RestEnd:               timeOfDayToPgTime(rule.RestEnd),
+		LocationID:             rule.LocationID,
+		DayOfWeek:              int16(rule.DayOfWeek),
+		IsWorkingDay:           rule.IsWorkingDay,
+		WorkStart:              timeOfDayToPgTime(rule.WorkStart),
+		WorkEnd:                timeOfDayToPgTime(rule.WorkEnd),
+		RestStart:              timeOfDayToPgTime(rule.RestStart),
+		RestEnd:                timeOfDayToPgTime(rule.RestEnd),
 		BufferBetweenSlotsMins: rule.BufferBetweenSlotsMin,
-		SlotStepMins:          rule.SlotStepMins,
+		SlotStepMins:           rule.SlotStepMins,
 	})
 	if err != nil {
 		return nil, err
@@ -170,7 +170,7 @@ func mapRule(row db.ScheduleRule) *domain.ScheduleRule {
 	}
 }
 
-func mapRuleFromUpsert(row db.UpsertScheduleRuleRow) *domain.ScheduleRule {
+func mapRuleFromUpsert(row db.ScheduleRule) *domain.ScheduleRule {
 	return &domain.ScheduleRule{
 		ID:                    row.ID,
 		LocationID:            row.LocationID,
@@ -204,7 +204,7 @@ func mapException(row db.Exception) *domain.Exception {
 	}
 }
 
-func mapExceptionFromCreate(row db.CreateExceptionRow) *domain.Exception {
+func mapExceptionFromCreate(row db.Exception) *domain.Exception {
 	return &domain.Exception{
 		ID:          row.ID,
 		LocationID:  row.LocationID,

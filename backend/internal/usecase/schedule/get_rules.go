@@ -35,7 +35,7 @@ func (uc *GetRulesUseCase) Execute(ctx context.Context, in GetRulesInput) (*GetR
 		return nil, err
 	}
 
-	belongs, err := uc.deps.Locations.LocationBelongsToMaster(ctx, in.LocationID, master.ID)
+	belongs, err := uc.deps.Locations.BelongsToMaster(ctx, in.LocationID, master.ID)
 	if err != nil {
 		return nil, err
 	}

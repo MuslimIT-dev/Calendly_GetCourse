@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -85,14 +86,17 @@ func (r *ServiceRepo) Update(ctx context.Context, s *domain.Service) (*domain.Se
 	return mapServiceBasic(row), nil
 }
 
-func (r *ServiceRepo) Delete(ctx context.Context, id int32) error {
-	return r.q.DeleteService(ctx, id)
+func (r *ServiceRepo) Delete(ctx context.Context, id, masterID int32) error {
+	return r.q.DeleteService(ctx, db.DeleteServiceParams{
+		ID:       id,
+		MasterID: masterID,
+	})
 }
 
 func (r *ServiceRepo) ExistsByDefaultID(ctx context.Context, masterID, defaultServiceID int32) (bool, error) {
 	return r.q.ExistsServiceByDefaultID(ctx, db.ExistsServiceByDefaultIDParams{
 		MasterID:         masterID,
-		DefaultServiceID: defaultServiceID,
+		DefaultServiceID: pgtype.Int4{Int32: defaultServiceID, Valid: true},
 	})
 }
 
@@ -160,7 +164,7 @@ func mapServiceBasic(row db.Service) *domain.Service {
 		Price:        row.Price,
 		Currency:     row.Currency,
 		DurationMins: row.DurationMins,
-		IsActive:     row.IsActive.Bool,
+		IsActive:     row.IsActive,
 		CreatedAt:    row.CreatedAt.Time,
 		UpdatedAt:    row.UpdatedAt.Time,
 	}
@@ -173,7 +177,20 @@ type locationsJSON struct {
 	IsActive     bool  `json:"is_active"`
 }
 
-func parseLocations(data []byte) ([]domain.ServiceLocation, error) {
+func parseLocations(value interface{}) ([]domain.ServiceLocation, error) {
+	var data []byte
+	switch value := value.(type) {
+	case []byte:
+		data = value
+	case json.RawMessage:
+		data = value
+	case string:
+		data = []byte(value)
+	case nil:
+		return nil, nil
+	default:
+		return nil, fmt.Errorf("unexpected locations JSON type %T", value)
+	}
 	if len(data) == 0 {
 		return nil, nil
 	}
@@ -203,7 +220,7 @@ func mapServiceRow(row db.GetMyServicesRow) (*domain.Service, error) {
 		Price:        row.Price,
 		Currency:     row.Currency,
 		DurationMins: row.DurationMins,
-		IsActive:     row.IsActive.Bool,
+		IsActive:     row.IsActive,
 		CreatedAt:    row.CreatedAt.Time,
 		UpdatedAt:    row.UpdatedAt.Time,
 	}
@@ -225,7 +242,7 @@ func mapServiceFull(row db.GetServiceByIDRow) (*domain.Service, error) {
 		Price:        row.Price,
 		Currency:     row.Currency,
 		DurationMins: row.DurationMins,
-		IsActive:     row.IsActive.Bool,
+		IsActive:     row.IsActive,
 		CreatedAt:    row.CreatedAt.Time,
 		UpdatedAt:    row.UpdatedAt.Time,
 	}
