@@ -69,6 +69,7 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id int32) (*domain.User, err
 		ID:            row.ID,
 		Name:          row.Name.String,
 		Email:         row.Email,
+		PasswordHash:  row.PasswordHash,
 		AvatarURL:     row.AvatarUrl.String,
 		Timezone:      row.Timezone.String,
 		EmailVerified: row.EmailVerified.Bool,

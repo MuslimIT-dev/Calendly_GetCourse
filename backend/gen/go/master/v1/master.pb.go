@@ -887,7 +887,7 @@ type UpdateMasterRequest struct {
 	Bio               string                 `protobuf:"bytes,1,opt,name=bio,proto3" json:"bio,omitempty"`
 	Specialization    string                 `protobuf:"bytes,2,opt,name=specialization,proto3" json:"specialization,omitempty"`
 	YearsOfExperience int32                  `protobuf:"varint,3,opt,name=years_of_experience,json=yearsOfExperience,proto3" json:"years_of_experience,omitempty"`
-	Languages         []string               `protobuf:"bytes,4,rep,name=languages,proto3" json:"languages,omitempty"`
+	Languages         []*Language            `protobuf:"bytes,4,rep,name=languages,proto3" json:"languages,omitempty"`
 	Certificates      []*Certificate         `protobuf:"bytes,5,rep,name=certificates,proto3" json:"certificates,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
@@ -944,7 +944,7 @@ func (x *UpdateMasterRequest) GetYearsOfExperience() int32 {
 	return 0
 }
 
-func (x *UpdateMasterRequest) GetLanguages() []string {
+func (x *UpdateMasterRequest) GetLanguages() []*Language {
 	if x != nil {
 		return x.Languages
 	}
@@ -1155,12 +1155,12 @@ const file_master_v1_master_proto_rawDesc = "" +
 	"\x11GetMasterResponse\x12!\n" +
 	"\x04user\x18\x01 \x01(\v2\r.user.v1.UserR\x04user\x120\n" +
 	"\x06master\x18\x02 \x01(\v2\x18.master.v1.MasterProfileR\x06master\x12/\n" +
-	"\bservices\x18\x03 \x03(\v2\x13.service.v1.ServiceR\bservices\"\xd9\x01\n" +
+	"\bservices\x18\x03 \x03(\v2\x13.service.v1.ServiceR\bservices\"\xee\x01\n" +
 	"\x13UpdateMasterRequest\x12\x10\n" +
 	"\x03bio\x18\x01 \x01(\tR\x03bio\x12&\n" +
 	"\x0especialization\x18\x02 \x01(\tR\x0especialization\x12.\n" +
-	"\x13years_of_experience\x18\x03 \x01(\x05R\x11yearsOfExperience\x12\x1c\n" +
-	"\tlanguages\x18\x04 \x03(\tR\tlanguages\x12:\n" +
+	"\x13years_of_experience\x18\x03 \x01(\x05R\x11yearsOfExperience\x121\n" +
+	"\tlanguages\x18\x04 \x03(\v2\x13.master.v1.LanguageR\tlanguages\x12:\n" +
 	"\fcertificates\x18\x05 \x03(\v2\x16.master.v1.CertificateR\fcertificates\"H\n" +
 	"\x14UpdateMasterResponse\x120\n" +
 	"\x06master\x18\x01 \x01(\v2\x18.master.v1.MasterProfileR\x06master\"'\n" +
@@ -1244,24 +1244,25 @@ var file_master_v1_master_proto_depIdxs = []int32{
 	18, // 13: master.v1.GetMasterResponse.user:type_name -> user.v1.User
 	5,  // 14: master.v1.GetMasterResponse.master:type_name -> master.v1.MasterProfile
 	20, // 15: master.v1.GetMasterResponse.services:type_name -> service.v1.Service
-	3,  // 16: master.v1.UpdateMasterRequest.certificates:type_name -> master.v1.Certificate
-	5,  // 17: master.v1.UpdateMasterResponse.master:type_name -> master.v1.MasterProfile
-	5,  // 18: master.v1.UpdateSlugResponse.master:type_name -> master.v1.MasterProfile
-	8,  // 19: master.v1.MasterService.ListMasters:input_type -> master.v1.ListMastersRequest
-	10, // 20: master.v1.MasterService.GetMaster:input_type -> master.v1.GetMasterRequest
-	11, // 21: master.v1.MasterService.GetMyMasterProfile:input_type -> master.v1.GetMyMasterProfileRequest
-	13, // 22: master.v1.MasterService.UpdateMaster:input_type -> master.v1.UpdateMasterRequest
-	15, // 23: master.v1.MasterService.UpdateSlug:input_type -> master.v1.UpdateSlugRequest
-	9,  // 24: master.v1.MasterService.ListMasters:output_type -> master.v1.ListMastersResponse
-	12, // 25: master.v1.MasterService.GetMaster:output_type -> master.v1.GetMasterResponse
-	12, // 26: master.v1.MasterService.GetMyMasterProfile:output_type -> master.v1.GetMasterResponse
-	14, // 27: master.v1.MasterService.UpdateMaster:output_type -> master.v1.UpdateMasterResponse
-	16, // 28: master.v1.MasterService.UpdateSlug:output_type -> master.v1.UpdateSlugResponse
-	24, // [24:29] is the sub-list for method output_type
-	19, // [19:24] is the sub-list for method input_type
-	19, // [19:19] is the sub-list for extension type_name
-	19, // [19:19] is the sub-list for extension extendee
-	0,  // [0:19] is the sub-list for field type_name
+	4,  // 16: master.v1.UpdateMasterRequest.languages:type_name -> master.v1.Language
+	3,  // 17: master.v1.UpdateMasterRequest.certificates:type_name -> master.v1.Certificate
+	5,  // 18: master.v1.UpdateMasterResponse.master:type_name -> master.v1.MasterProfile
+	5,  // 19: master.v1.UpdateSlugResponse.master:type_name -> master.v1.MasterProfile
+	8,  // 20: master.v1.MasterService.ListMasters:input_type -> master.v1.ListMastersRequest
+	10, // 21: master.v1.MasterService.GetMaster:input_type -> master.v1.GetMasterRequest
+	11, // 22: master.v1.MasterService.GetMyMasterProfile:input_type -> master.v1.GetMyMasterProfileRequest
+	13, // 23: master.v1.MasterService.UpdateMaster:input_type -> master.v1.UpdateMasterRequest
+	15, // 24: master.v1.MasterService.UpdateSlug:input_type -> master.v1.UpdateSlugRequest
+	9,  // 25: master.v1.MasterService.ListMasters:output_type -> master.v1.ListMastersResponse
+	12, // 26: master.v1.MasterService.GetMaster:output_type -> master.v1.GetMasterResponse
+	12, // 27: master.v1.MasterService.GetMyMasterProfile:output_type -> master.v1.GetMasterResponse
+	14, // 28: master.v1.MasterService.UpdateMaster:output_type -> master.v1.UpdateMasterResponse
+	16, // 29: master.v1.MasterService.UpdateSlug:output_type -> master.v1.UpdateSlugResponse
+	25, // [25:30] is the sub-list for method output_type
+	20, // [20:25] is the sub-list for method input_type
+	20, // [20:20] is the sub-list for extension type_name
+	20, // [20:20] is the sub-list for extension extendee
+	0,  // [0:20] is the sub-list for field type_name
 }
 
 func init() { file_master_v1_master_proto_init() }

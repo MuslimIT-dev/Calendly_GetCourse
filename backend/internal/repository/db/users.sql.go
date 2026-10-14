@@ -161,7 +161,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEm
 
 const getUserByID = `-- name: GetUserByID :one
 SELECT
-    u.id, u.name, u.email, u.avatar_url, u.timezone, u.email_verified,
+    u.id, u.name, u.email, u.password_hash, u.avatar_url, u.timezone, u.email_verified,
     u.created_at, u.updated_at,
     array_agg(ur.role_id ORDER BY ur.role_id)::int[] AS role_ids
 FROM users u
@@ -174,6 +174,7 @@ type GetUserByIDRow struct {
 	ID            int32              `json:"id"`
 	Name          pgtype.Text        `json:"name"`
 	Email         string             `json:"email"`
+	PasswordHash  string             `json:"password_hash"`
 	AvatarUrl     pgtype.Text        `json:"avatar_url"`
 	Timezone      pgtype.Text        `json:"timezone"`
 	EmailVerified pgtype.Bool        `json:"email_verified"`
@@ -189,6 +190,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id int32) (GetUserByIDRow, er
 		&i.ID,
 		&i.Name,
 		&i.Email,
+		&i.PasswordHash,
 		&i.AvatarUrl,
 		&i.Timezone,
 		&i.EmailVerified,

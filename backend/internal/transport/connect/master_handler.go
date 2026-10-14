@@ -220,11 +220,12 @@ func toDomainFilter(f *masterv1.Filter) domain.MasterFilter {
 	return out
 }
 
-func toDomainLanguages(in []string) []domain.Language {
+func toDomainLanguages(in []*masterv1.Language) []domain.Language {
 	out := make([]domain.Language, len(in))
-	for i, name := range in {
+	for i, l := range in {
 		out[i] = domain.Language{
-			Name: name,
+			Name:        l.Name,
+			Proficiency: domain.ProficiencyLevel(l.Proficiency),
 		}
 	}
 	return out

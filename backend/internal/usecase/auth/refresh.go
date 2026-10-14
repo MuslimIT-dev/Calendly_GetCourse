@@ -34,15 +34,14 @@ func (uc *RefreshUseCase) Execute(ctx context.Context, in RefreshInput) (*Refres
 		return nil, domain.ErrInvalidToken
 	}
 
-	oldHash := sha256Hex(in.RefreshToken)
-	oldKey := "session:" + oldHash
+	oldKey := fmt.Sprintf("session:%d:%s", userID, sha256Hex(in.RefreshToken))
 
 	session, err := uc.deps.Sessions.Get(ctx, oldKey)
 	if err != nil {
 		return nil, fmt.Errorf("session lookup: %w", err)
 	}
 	if session == nil {
-		_, _ = uc.deps.Sessions.DeleteByPattern(ctx, "session:*:user:"+fmt.Sprint(userID))
+		_, _ = uc.deps.Sessions.DeleteByPattern(ctx, fmt.Sprintf("session:%d:*", userID))
 		return nil, domain.ErrInvalidToken
 	}
 

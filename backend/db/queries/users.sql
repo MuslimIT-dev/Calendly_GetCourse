@@ -22,7 +22,7 @@ GROUP BY iu.id, iu.name, iu.email, iu.avatar_url, iu.timezone, iu.email_verified
 
 -- name: GetUserByID :one
 SELECT
-    u.id, u.name, u.email, u.avatar_url, u.timezone, u.email_verified,
+    u.id, u.name, u.email, u.password_hash, u.avatar_url, u.timezone, u.email_verified,
     u.created_at, u.updated_at,
     array_agg(ur.role_id ORDER BY ur.role_id)::int[] AS role_ids
 FROM users u

@@ -1,0 +1,13 @@
+.git
+.gitignore
+*.md
+.env
+.env.*
+!.env.example
+/tmp
+/bin
+/tests
+**/*_test.go
+**/testdata
+.vscode
+.idea

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log"
 	"math/big"
 	"strconv"
 	"time"
@@ -97,30 +98,40 @@ func (r *MasterRepo) SlugExists(ctx context.Context, slug string, excludeID int3
 }
 
 func (r *MasterRepo) ReplaceLanguages(ctx context.Context, masterID int32, languages []domain.Language) error {
-	if err := r.q.ReplaceMasterLanguages(ctx, masterID); err != nil {
-		return err
-	}
-	if len(languages) == 0 {
-		return nil
-	}
+    log.Printf("[REPO] ReplaceLanguages: masterID=%d, count=%d", masterID, len(languages))
+    
+    if err := r.q.ReplaceMasterLanguages(ctx, masterID); err != nil {
+        log.Printf("[REPO] Delete failed: %v", err)
+        return err
+    }
+    if len(languages) == 0 {
+        log.Printf("[REPO] empty languages, skip insert")
+        return nil
+    }
 
 	type langDTO struct {
 		Language    string `json:"language"`
 		Proficiency string `json:"proficiency"`
 	}
-	dtos := make([]langDTO, len(languages))
-	for i, l := range languages {
-		dtos[i] = langDTO{Language: l.Name, Proficiency: proficiencyToString(l.Proficiency)}
-	}
-	data, err := json.Marshal(dtos)
-	if err != nil {
-		return err
-	}
+    dtos := make([]langDTO, len(languages))
+    for i, l := range languages {
+        dtos[i] = langDTO{Language: l.Name, Proficiency: proficiencyToString(l.Proficiency)}
+        log.Printf("[REPO] lang[%d]: %s / %s", i, l.Name, proficiencyToString(l.Proficiency))
+    }
+    data, err := json.Marshal(dtos)
+    if err != nil {
+        return err
+    }
+    log.Printf("[REPO] JSON: %s", string(data))
 
-	return r.q.InsertMasterLanguages(ctx, db.InsertMasterLanguagesParams{
-		MasterID: masterID,
-		Data:     data,
-	})
+    err = r.q.InsertMasterLanguages(ctx, db.InsertMasterLanguagesParams{
+        MasterID: masterID,
+        Data:     data,
+    })
+    if err != nil {
+        log.Printf("[REPO] Insert failed: %v", err)
+    }
+    return err
 }
 
 func (r *MasterRepo) ReplaceCertificates(ctx context.Context, masterID int32, certs []domain.Certificate) error {
