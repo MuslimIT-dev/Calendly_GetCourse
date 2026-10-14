@@ -3,6 +3,8 @@ package auth
 import (
 	"context"
 	"fmt"
+	"strings"
+	"strconv"
 	"time"
 
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
@@ -63,6 +65,20 @@ func (uc *RegisterUseCase) Execute(ctx context.Context, in RegisterInput) (*Regi
 		return nil, err
 	}
 
+	if in.Role == domain.RoleMaster {
+		slug := generateSlug(user.Email)
+		_, err := uc.deps.Masters.Create(ctx, &domain.MasterProfile{
+			UserID:              user.ID,
+			Slug:                slug,
+			Specialization:      "",
+			YearsOfExperience:   0,
+			IsAcceptingBookings: false,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("create master profile: %w", err)
+		}
+	}
+
 	access, refresh, expiresIn, err := uc.deps.Tokens.GeneratePair(user.ID, roles)
 	if err != nil {
 		return nil, fmt.Errorf("generate tokens: %w", err)
@@ -102,4 +118,10 @@ func (uc *RegisterUseCase) Execute(ctx context.Context, in RegisterInput) (*Regi
 		RefreshToken: refresh,
 		ExpiresIn:    expiresIn,
 	}, nil
+}
+
+func generateSlug(email string) string {
+	parts := strings.Split(email, "@")
+	base := parts[0]
+	return base + "-" + strconv.Itoa(int(time.Now().Unix()))
 }

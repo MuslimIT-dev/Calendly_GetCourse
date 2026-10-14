@@ -147,6 +147,7 @@ func main() {
 
 	registerUC := authuc.NewRegisterUseCase(authuc.Deps{
 		Users:          userRepo,
+		Masters:		masterRepo,
 		Sessions:       sessionCache,
 		VerifyTokens:   verifyTokenCache,
 		Hasher:         passwordHasher,
@@ -318,6 +319,7 @@ func main() {
 	paymentDeps := paymentuc.Deps{
 		Payments: paymentRepo,
 		Users:    userRepo,
+		Bookings: bookingRepo,
 	}
 
 	createPaymentUC := paymentuc.NewCreateUseCase(paymentDeps, paymentGateway)

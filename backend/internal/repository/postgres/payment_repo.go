@@ -27,6 +27,7 @@ func (r *PaymentRepo) Create(ctx context.Context, p *domain.Payment) (*domain.Pa
 		UserID:      p.UserID,
 		Amount:      p.Amount,
 		Currency:    p.Currency,
+		Status:      int16(p.Status),
 		Provider:    int16(p.Provider),
 		Purpose:     int16(p.Purpose),
 		ReferenceID: p.ReferenceID,

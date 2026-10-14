@@ -37,11 +37,13 @@ func main() {
 	notificationRepo := postgres.NewNotificationRepo(queries)
 	userRepo := postgres.NewUserRepo(queries)
 	masterRepo := postgres.NewMasterRepo(queries)
+
 	registry := notificationuc.NewNotifierRegistry(
 		notifier.NewInAppNotifier(),
 		notifier.NewEmailNotifier(os.Getenv("EMAIL_FROM")),
 		notifier.NewTelegramNotifier(os.Getenv("TELEGRAM_BOT_TOKEN")),
 	)
+	
 	sendUC := notificationuc.NewSendUseCase(notificationuc.Deps{
 		Notifications: notificationRepo,
 		Users:         userRepo,

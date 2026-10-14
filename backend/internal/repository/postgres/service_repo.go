@@ -177,27 +177,36 @@ type locationsJSON struct {
 	IsActive     bool  `json:"is_active"`
 }
 
-func parseLocations(value interface{}) ([]domain.ServiceLocation, error) {
+func parseLocations(v any) ([]domain.ServiceLocation, error) {
+	if v == nil {
+		return nil, nil
+	}
+
 	var data []byte
-	switch value := value.(type) {
+	switch val := v.(type) {
 	case []byte:
-		data = value
-	case json.RawMessage:
-		data = value
+		data = val
 	case string:
-		data = []byte(value)
-	case nil:
-		return nil, nil
+		data = []byte(val)
+	case []interface{}:
+		b, err := json.Marshal(val)
+		if err != nil {
+			return nil, err
+		}
+		data = b
 	default:
-		return nil, fmt.Errorf("unexpected locations JSON type %T", value)
+		return nil, fmt.Errorf("unexpected locations JSON type %T", v)
 	}
-	if len(data) == 0 {
+
+	if len(data) == 0 || string(data) == "null" {
 		return nil, nil
 	}
+
 	var raw []locationsJSON
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return nil, err
 	}
+
 	out := make([]domain.ServiceLocation, len(raw))
 	for i, l := range raw {
 		out[i] = domain.ServiceLocation{

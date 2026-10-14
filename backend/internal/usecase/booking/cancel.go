@@ -49,7 +49,7 @@ func (uc *CancelUseCase) Execute(ctx context.Context, in CancelInput) (*CancelOu
 	case a.ClientID == userID:
 		status = domain.AppointmentCancelledByClient
 		byRole = domain.CancelledByClient
-	case a.MasterID == userID:
+	case isMasterOwner(ctx, uc.deps.Masters, userID, a.MasterID):
 		status = domain.AppointmentCancelledByMaster
 		byRole = domain.CancelledByMaster
 	case appcontext.HasRole(ctx, int32(domain.RoleAdmin)):

@@ -41,10 +41,8 @@ func (uc *RescheduleUseCase) Execute(ctx context.Context, in RescheduleInput) (*
 	}
 	a := card.Appointment
 
-	if a.ClientID != userID && a.MasterID != userID {
-		if !appcontext.HasRole(ctx, int32(domain.RoleAdmin)) {
-			return nil, domain.ErrForbidden
-		}
+	if !isMasterOrClient(ctx, uc.deps.Masters, userID, a.MasterID, a.ClientID) {
+		return nil, domain.ErrForbidden
 	}
 
 	if a.Status != domain.AppointmentPending && a.Status != domain.AppointmentConfirmed {

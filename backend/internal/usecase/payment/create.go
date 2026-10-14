@@ -3,6 +3,7 @@ package payment
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/appcontext"
@@ -15,8 +16,6 @@ type CreateInput struct {
 	Purpose     domain.PaymentPurpose
 	Provider    domain.PaymentProvider
 	ReferenceID string
-	Amount      int32
-	Currency    string
 	ReturnURL   string
 }
 
@@ -39,10 +38,10 @@ func (uc *CreateUseCase) Execute(ctx context.Context, in CreateInput) (*CreateOu
 		return nil, domain.ErrUnauthorized
 	}
 
-	if in.ReferenceID == "" || in.Amount <= 0 || in.Currency == "" {
+	if in.ReferenceID == "" {
 		return nil, domain.ErrInvalidInput
 	}
-	if in.Purpose == domain.PaymentPurpose(0) || in.Provider == domain.PaymentProvider(0) {
+	if in.Purpose == 0 || in.Provider == 0 {
 		return nil, domain.ErrInvalidInput
 	}
 
@@ -50,16 +49,42 @@ func (uc *CreateUseCase) Execute(ctx context.Context, in CreateInput) (*CreateOu
 		return &CreateOutput{Payment: existing}, nil
 	}
 
+	var amount int32
+	var currency string
+
+	switch in.Purpose {
+	case domain.PurposeBooking:
+		refID, err := strconv.ParseInt(in.ReferenceID, 10, 32)
+		if err != nil {
+			return nil, domain.ErrInvalidInput
+		}
+		card, err := uc.deps.Bookings.GetByID(ctx, int64(refID))
+		if err != nil {
+			return nil, err
+		}
+		if card.Appointment.ClientID != userID {
+			return nil, domain.ErrForbidden
+		}
+		amount = card.Appointment.Price
+		currency = card.Appointment.Currency
+	case domain.PurposeCourse:
+		return nil, domain.ErrInvalidInput // не реализовано
+	default:
+		return nil, domain.ErrInvalidInput
+	}
+
+	if amount <= 0 || currency == "" {
+		return nil, domain.ErrInvalidInput
+	}
+
 	p, err := uc.deps.Payments.Create(ctx, &domain.Payment{
 		UserID:      userID,
-		Amount:      in.Amount,
-		Currency:    in.Currency,
+		Amount:      amount,
+		Currency:    currency,
 		Status:      domain.PaymentPending,
 		Provider:    in.Provider,
 		Purpose:     in.Purpose,
 		ReferenceID: in.ReferenceID,
-		ExternalID:  "",
-		PaymentURL:  "",
 		ExpiresAt:   time.Now().UTC().Add(paymentTTL),
 	})
 	if err != nil {
@@ -73,10 +98,9 @@ func (uc *CreateUseCase) Execute(ctx context.Context, in CreateInput) (*CreateOu
 	}
 
 	updated, err := uc.deps.Payments.SetExternal(ctx, p.ID, externalID, paymentURL)
-	_ = updated
 	if err != nil {
-		return nil, fmt.Errorf("update external: %w", err)
+		return nil, fmt.Errorf("set external: %w", err)
 	}
 
-	return &CreateOutput{Payment: p}, nil
+	return &CreateOutput{Payment: updated}, nil
 }

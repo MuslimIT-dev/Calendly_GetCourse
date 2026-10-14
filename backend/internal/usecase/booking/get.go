@@ -34,10 +34,8 @@ func (uc *GetUseCase) Execute(ctx context.Context, in GetInput) (*GetOutput, err
 		return nil, err
 	}
 
-	if card.Appointment.ClientID != userID && card.Appointment.MasterID != userID {
-		if !appcontext.HasRole(ctx, int32(domain.RoleAdmin)) {
-			return nil, domain.ErrForbidden
-		}
+	if !isMasterOrClient(ctx, uc.deps.Masters, userID, card.Appointment.MasterID, card.Appointment.ClientID) {
+		return nil, domain.ErrForbidden
 	}
 
 	return &GetOutput{Appointment: card}, nil

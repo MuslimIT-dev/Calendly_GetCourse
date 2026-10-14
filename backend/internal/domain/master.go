@@ -89,6 +89,7 @@ type MasterRepository interface {
 	Create(ctx context.Context, p *MasterProfile) (*MasterProfile, error)
 	Update(ctx context.Context, p *MasterProfile) (*MasterProfile, error)
 	UpdateSlug(ctx context.Context, id int32, slug string) error
+	UpdateRating(ctx context.Context, masterID int32) error
 	SlugExists(ctx context.Context, slug string, excludeID int32) (bool, error)
 
 	ReplaceLanguages(ctx context.Context, masterID int32, languages []Language) error

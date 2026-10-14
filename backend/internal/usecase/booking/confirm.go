@@ -36,7 +36,7 @@ func (uc *ConfirmUseCase) Execute(ctx context.Context, in ConfirmInput) (*Confir
 	}
 	a := card.Appointment
 
-	if a.MasterID != userID && !appcontext.HasRole(ctx, int32(domain.RoleAdmin)) {
+	if !isMasterOwner(ctx, uc.deps.Masters, userID, a.MasterID) {
 		return nil, domain.ErrForbidden
 	}
 	if a.Status != domain.AppointmentPending {

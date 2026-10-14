@@ -36,7 +36,7 @@ func (uc *ListMasterUseCase) Execute(ctx context.Context, in ListMasterInput) (*
 		return nil, domain.ErrUnauthorized
 	}
 
-	if in.MasterID != userID && !appcontext.HasRole(ctx, int32(domain.RoleAdmin)) {
+	if !isMasterOwner(ctx, uc.deps.Masters, userID, in.MasterID) {
 		return nil, domain.ErrForbidden
 	}
 

@@ -37,6 +37,7 @@ type UserRegisteredEvent struct {
 
 type Deps struct {
 	Users            domain.UserRepository
+	Masters			 domain.MasterRepository
 	Sessions         domain.Cache[domain.SessionValue]
 	VerifyTokens     domain.Cache[VerifyEmailValue]
 	PasswordResets   domain.Cache[PasswordResetValue]

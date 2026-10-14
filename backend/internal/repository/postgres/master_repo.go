@@ -191,6 +191,10 @@ func (r *MasterRepo) ListCards(ctx context.Context, f domain.MasterFilter, c *do
 	}
 }
 
+func (r *MasterRepo) UpdateRating(ctx context.Context, masterID int32) error {
+	return r.q.UpdateMasterRating(ctx, masterID)
+}
+
 func buildExperienceParams(f domain.MasterFilter, c *domain.ListCursor, limit int32) db.ListMastersByExperienceParams {
 	params := db.ListMastersByExperienceParams{
 		MinPrice:       int4Value(f.MinPrice),

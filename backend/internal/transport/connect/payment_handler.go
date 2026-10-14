@@ -56,8 +56,6 @@ func (h *PaymentHandler) CreatePayment(
 		Provider:    domain.PaymentProvider(req.Msg.Provider),
 		ReferenceID: req.Msg.ReferenceId,
 		ReturnURL:   req.Msg.ReturnUrl,
-		Amount:      moneyToKopecks(req.Msg.Amount),
-		Currency:    req.Msg.Amount.GetCurrencyCode(),
 	})
 	if err != nil {
 		return nil, mapDomainError(err)

@@ -9,6 +9,7 @@ import (
 type Deps struct {
 	Payments domain.PaymentRepository
 	Users    domain.UserRepository
+	Bookings domain.BookingRepository
 }
 
 type EventPublisher interface {
