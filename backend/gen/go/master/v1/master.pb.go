@@ -7,9 +7,9 @@
 package masterv1
 
 import (
-	v11 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/location/v1"
-	v12 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/service/v1"
-	v1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1"
+	v11 "github.com/MuslimIT-dev/zaman/backend/gen/go/location/v1"
+	v12 "github.com/MuslimIT-dev/zaman/backend/gen/go/service/v1"
+	v1 "github.com/MuslimIT-dev/zaman/backend/gen/go/user/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"

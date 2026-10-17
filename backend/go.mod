@@ -1,4 +1,4 @@
-module github.com/MuslimIT-dev/Calendly_GetCourse/backend
+module github.com/MuslimIT-dev/zaman/backend
 
 go 1.26.0
 
