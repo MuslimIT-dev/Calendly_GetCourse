@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/appcontext"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
+	"github.com/MuslimIT-dev/zaman/backend/internal/appcontext"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
 )
 
 type CompleteInput struct {

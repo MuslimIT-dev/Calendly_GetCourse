@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/appcontext"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
+	"github.com/MuslimIT-dev/zaman/backend/internal/appcontext"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
 )
 
 var slugRegex = regexp.MustCompile(`^[a-z0-9](?:[a-z0-9-]{1,62}[a-z0-9])?$`)

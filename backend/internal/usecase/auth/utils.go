@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
 )
 
 func generateToken(nBytes int) string {

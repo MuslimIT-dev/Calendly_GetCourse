@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
 )
 
 func summaryKey(target domain.ReviewTarget, targetID int32) string {

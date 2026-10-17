@@ -7,10 +7,10 @@ import (
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	locationv1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/location/v1"
-	locationv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/location/v1/locationv1connect"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
-	locationuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/location"
+	locationv1 "github.com/MuslimIT-dev/zaman/backend/gen/go/location/v1"
+	locationv1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/location/v1/locationv1connect"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
+	locationuc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/location"
 )
 
 type LocationHandler struct {

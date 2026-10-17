@@ -3,8 +3,8 @@ package booking
 import (
 	"context"
 
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/appcontext"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
+	"github.com/MuslimIT-dev/zaman/backend/internal/appcontext"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
 )
 
 func isMasterOwner(ctx context.Context, masters domain.MasterRepository, userID, appointmentMasterID int32) bool {

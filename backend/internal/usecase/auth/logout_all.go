@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/appcontext"
+	"github.com/MuslimIT-dev/zaman/backend/internal/appcontext"
 )
 
 type LogoutAllInput struct{}

@@ -9,10 +9,10 @@ import (
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	notificationv1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/notification/v1"
-	notificationv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/notification/v1/notificationv1connect"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
-	notificationuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/notification"
+	notificationv1 "github.com/MuslimIT-dev/zaman/backend/gen/go/notification/v1"
+	notificationv1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/notification/v1/notificationv1connect"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
+	notificationuc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/notification"
 )
 
 type NotificationHandler struct {

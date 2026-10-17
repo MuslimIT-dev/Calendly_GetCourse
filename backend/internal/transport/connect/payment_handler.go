@@ -9,10 +9,10 @@ import (
 	"google.golang.org/genproto/googleapis/type/money"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	paymentv1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/payment/v1"
-	paymentv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/payment/v1/paymentv1connect"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
-	paymentuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/payment"
+	paymentv1 "github.com/MuslimIT-dev/zaman/backend/gen/go/payment/v1"
+	paymentv1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/payment/v1/paymentv1connect"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
+	paymentuc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/payment"
 )
 
 type PaymentHandler struct {

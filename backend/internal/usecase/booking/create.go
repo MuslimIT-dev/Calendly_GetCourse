@@ -8,8 +8,8 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/appcontext"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
+	"github.com/MuslimIT-dev/zaman/backend/internal/appcontext"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
 )
 
 type CreateInput struct {

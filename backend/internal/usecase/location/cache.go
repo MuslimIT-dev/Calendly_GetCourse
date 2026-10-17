@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
 )
 
 func invalidate(ctx context.Context, cache domain.Cache[domain.CachedLocations], masterID int32) {

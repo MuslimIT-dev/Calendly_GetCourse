@@ -6,10 +6,10 @@ import (
 
 	"connectrpc.com/connect"
 
-	masterv1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/master/v1"
-	masterv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/master/v1/masterv1connect"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
-	masteruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/master"
+	masterv1 "github.com/MuslimIT-dev/zaman/backend/gen/go/master/v1"
+	masterv1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/master/v1/masterv1connect"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
+	masteruc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/master"
 )
 
 type MasterHandler struct {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
-	notificationuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/notification"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
+	notificationuc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/notification"
 )
 
 type UserRegisteredEvent struct {

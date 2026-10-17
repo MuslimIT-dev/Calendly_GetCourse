@@ -11,8 +11,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
-	paymentuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/payment"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
+	paymentuc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/payment"
 )
 
 type ManualGateway struct {

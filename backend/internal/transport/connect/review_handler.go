@@ -8,10 +8,10 @@ import (
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	reviewv1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/review/v1"
-	reviewv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/review/v1/reviewv1connect"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
-	reviewuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/review"
+	reviewv1 "github.com/MuslimIT-dev/zaman/backend/gen/go/review/v1"
+	reviewv1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/review/v1/reviewv1connect"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
+	reviewuc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/review"
 )
 
 type ReviewHandler struct {

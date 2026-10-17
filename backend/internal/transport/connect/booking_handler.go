@@ -8,10 +8,10 @@ import (
 	"google.golang.org/genproto/googleapis/type/money"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	bookingv1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/booking/v1"
-	bookingv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/booking/v1/bookingv1connect"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
-	bookinguc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/booking"
+	bookingv1 "github.com/MuslimIT-dev/zaman/backend/gen/go/booking/v1"
+	bookingv1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/booking/v1/bookingv1connect"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
+	bookinguc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/booking"
 )
 
 type BookingHandler struct {

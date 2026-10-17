@@ -11,10 +11,10 @@ import (
 	"google.golang.org/genproto/googleapis/type/timeofday"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	schedulev1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/schedule/v1"
-	schedulev1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/schedule/v1/schedulev1connect"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
-	scheduleuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/schedule"
+	schedulev1 "github.com/MuslimIT-dev/zaman/backend/gen/go/schedule/v1"
+	schedulev1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/schedule/v1/schedulev1connect"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
+	scheduleuc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/schedule"
 )
 
 type ScheduleHandler struct {

@@ -7,11 +7,11 @@ import (
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	authv1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/auth/v1"
-	authv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/auth/v1/authv1connect"
-	userv1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
-	authuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/auth"
+	authv1 "github.com/MuslimIT-dev/zaman/backend/gen/go/auth/v1"
+	authv1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/auth/v1/authv1connect"
+	userv1 "github.com/MuslimIT-dev/zaman/backend/gen/go/user/v1"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
+	authuc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/auth"
 )
 
 type AuthHandler struct {

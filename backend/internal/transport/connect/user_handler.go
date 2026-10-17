@@ -6,10 +6,10 @@ import (
 
 	"connectrpc.com/connect"
 
-	userv1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1"
-	userv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1/userv1connect"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
-	useruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/user"
+	userv1 "github.com/MuslimIT-dev/zaman/backend/gen/go/user/v1"
+	userv1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/user/v1/userv1connect"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
+	useruc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/user"
 )
 
 type UserHandler struct {

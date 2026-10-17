@@ -7,10 +7,10 @@ import (
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	catalogv1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/catalog/v1"
-	catalogv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/catalog/v1/catalogv1connect"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
-	cataloguc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/catalog"
+	catalogv1 "github.com/MuslimIT-dev/zaman/backend/gen/go/catalog/v1"
+	catalogv1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/catalog/v1/catalogv1connect"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
+	cataloguc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/catalog"
 )
 
 type CatalogHandler struct {

@@ -7,10 +7,10 @@ import (
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	servicev1 "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/service/v1"
-	servicev1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/service/v1/servicev1connect"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
-	serviceuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/service"
+	servicev1 "github.com/MuslimIT-dev/zaman/backend/gen/go/service/v1"
+	servicev1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/service/v1/servicev1connect"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
+	serviceuc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/service"
 )
 
 type ServiceHandler struct {

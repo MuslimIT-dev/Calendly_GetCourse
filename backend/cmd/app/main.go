@@ -18,45 +18,45 @@ import (
 	goredis "github.com/redis/go-redis/v9"
 	kafkago "github.com/segmentio/kafka-go"
 
-	migrationfiles "github.com/MuslimIT-dev/Calendly_GetCourse/backend/db/migrations"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/domain"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/infrastructure/broker"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/infrastructure/cache"
-	postgresdb "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/db"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/postgres"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/transport/connect/middleware"
+	migrationfiles "github.com/MuslimIT-dev/zaman/backend/db/migrations"
+	"github.com/MuslimIT-dev/zaman/backend/internal/domain"
+	"github.com/MuslimIT-dev/zaman/backend/internal/infrastructure/broker"
+	"github.com/MuslimIT-dev/zaman/backend/internal/infrastructure/cache"
+	postgresdb "github.com/MuslimIT-dev/zaman/backend/internal/repository/db"
+	"github.com/MuslimIT-dev/zaman/backend/internal/repository/postgres"
+	"github.com/MuslimIT-dev/zaman/backend/internal/transport/connect/middleware"
 
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/pkg/hasher"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/pkg/jwt"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/pkg/password"
+	"github.com/MuslimIT-dev/zaman/backend/pkg/hasher"
+	"github.com/MuslimIT-dev/zaman/backend/pkg/jwt"
+	"github.com/MuslimIT-dev/zaman/backend/pkg/password"
 
-	authv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/auth/v1/authv1connect"
-	bookingv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/booking/v1/bookingv1connect"
-	catalogv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/catalog/v1/catalogv1connect"
-	locationv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/location/v1/locationv1connect"
-	masterv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/master/v1/masterv1connect"
-	notificationv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/notification/v1/notificationv1connect"
-	paymentv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/payment/v1/paymentv1connect"
-	reviewv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/review/v1/reviewv1connect"
-	schedulev1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/schedule/v1/schedulev1connect"
-	servicev1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/service/v1/servicev1connect"
-	userv1connect "github.com/MuslimIT-dev/Calendly_GetCourse/backend/gen/go/user/v1/userv1connect"
+	authv1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/auth/v1/authv1connect"
+	bookingv1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/booking/v1/bookingv1connect"
+	catalogv1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/catalog/v1/catalogv1connect"
+	locationv1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/location/v1/locationv1connect"
+	masterv1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/master/v1/masterv1connect"
+	notificationv1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/notification/v1/notificationv1connect"
+	paymentv1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/payment/v1/paymentv1connect"
+	reviewv1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/review/v1/reviewv1connect"
+	schedulev1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/schedule/v1/schedulev1connect"
+	servicev1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/service/v1/servicev1connect"
+	userv1connect "github.com/MuslimIT-dev/zaman/backend/gen/go/user/v1/userv1connect"
 
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/infrastructure/notifier"
-	gateway "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/infrastructure/payment"
-	connecttransport "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/transport/connect"
+	"github.com/MuslimIT-dev/zaman/backend/internal/infrastructure/notifier"
+	gateway "github.com/MuslimIT-dev/zaman/backend/internal/infrastructure/payment"
+	connecttransport "github.com/MuslimIT-dev/zaman/backend/internal/transport/connect"
 
-	authuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/auth"
-	bookinguc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/booking"
-	cataloguc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/catalog"
-	locationuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/location"
-	masteruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/master"
-	notificationuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/notification"
-	paymentuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/payment"
-	reviewuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/review"
-	scheduleuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/schedule"
-	serviceuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/service"
-	useruc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/user"
+	authuc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/auth"
+	bookinguc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/booking"
+	cataloguc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/catalog"
+	locationuc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/location"
+	masteruc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/master"
+	notificationuc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/notification"
+	paymentuc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/payment"
+	reviewuc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/review"
+	scheduleuc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/schedule"
+	serviceuc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/service"
+	useruc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/user"
 )
 
 func main() {
@@ -72,15 +72,19 @@ func main() {
 	kafkaBroker := mustEnv("KAFKA_BROKER")
 	jwtSecret := mustEnv("JWT_SECRET")
 
+	log.Println("[1] env loaded")
+
 	if err := runMigrations(dbURL); err != nil {
 		log.Fatalf("migrations: %v", err)
 	}
+	log.Println("[2] migrations done")
 
 	pool, err := pgxpool.New(ctx, dbURL)
 	if err != nil {
 		log.Fatalf("postgres: %v", err)
 	}
 	defer pool.Close()
+	log.Println("[3] postgres pool created")
 
 	redisOpt, err := goredis.ParseURL(redisURL)
 	if err != nil {
