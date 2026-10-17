@@ -11,12 +11,12 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/infrastructure/broker"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/infrastructure/notifier"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/db"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/repository/postgres"
-	notificationuc "github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/usecase/notification"
-	"github.com/MuslimIT-dev/Calendly_GetCourse/backend/internal/worker"
+	"github.com/MuslimIT-dev/zaman/backend/internal/infrastructure/broker"
+	"github.com/MuslimIT-dev/zaman/backend/internal/infrastructure/notifier"
+	"github.com/MuslimIT-dev/zaman/backend/internal/repository/db"
+	"github.com/MuslimIT-dev/zaman/backend/internal/repository/postgres"
+	notificationuc "github.com/MuslimIT-dev/zaman/backend/internal/usecase/notification"
+	"github.com/MuslimIT-dev/zaman/backend/internal/worker"
 )
 
 func main() {
